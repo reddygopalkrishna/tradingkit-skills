@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: macos-latest
+            python: "3.12"
+          - os: windows-latest
+            python: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Vendored core in sync
+        run: python tools/sync_core.py --check
+      - name: Validate skills
+        run: python tools/validate_skills.py
+      - name: Unit + end-to-end tests (offline)
+        run: python -W ignore -m unittest discover -s tests -v
+      - name: Build packages
+        run: python tools/build_packages.py

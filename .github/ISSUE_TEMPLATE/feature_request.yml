@@ -1,0 +1,17 @@
+name: Feature / skill request
+description: A new skill, broker, data provider, indicator, pattern or preset
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type
+      options: [New skill, Broker adapter, Data provider, Indicator / rule function, Chart pattern, Screener preset, Other]
+    validations: {required: true}
+  - type: textarea
+    id: what
+    attributes: {label: What should it do?, description: "Include formulas or references for indicators/patterns."}
+    validations: {required: true}
+  - type: textarea
+    id: why
+    attributes: {label: Who is it for / why?}

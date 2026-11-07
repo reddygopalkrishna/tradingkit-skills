@@ -1,0 +1,23 @@
+name: Bug report
+description: Something computed wrong, crashed, or behaved unexpectedly
+labels: [bug]
+body:
+  - type: input
+    id: skill
+    attributes: {label: Skill, placeholder: e.g. backtester}
+    validations: {required: true}
+  - type: textarea
+    id: command
+    attributes: {label: Command or prompt, render: shell}
+    validations: {required: true}
+  - type: textarea
+    id: output
+    attributes: {label: Output / error, render: text}
+  - type: textarea
+    id: expected
+    attributes: {label: What you expected}
+  - type: input
+    id: env
+    attributes: {label: Environment, placeholder: "Python 3.12, macOS, Claude Code / Codex / claude.ai"}
+  - type: markdown
+    attributes: {value: "Never paste API keys, access tokens or account numbers."}
