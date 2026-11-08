@@ -89,6 +89,17 @@ Requires Python 3.9+. Nothing to `pip install`.
 
 ## Quick start
 
+> **New here? Read the [full usage guide](docs/USAGE.md)**: install, first paper trade in 10 minutes,
+> symbols for every market, every skill's commands, live trading setup, scheduling and troubleshooting.
+
+```bash
+cd skills/trading-setup
+python3 scripts/setup.py doctor                                            # check your machine
+python3 scripts/setup.py init --equity 50000 --currency USD --benchmark SPY  # your account and market
+```
+
+Then talk to your agent:
+
 ```text
 "Set up trading-skills: 50,000 USD account, benchmark SPY, risk 1% per trade."
 "How's the market?"                          "Analyze AAPL - daily and weekly."
@@ -106,6 +117,21 @@ cd skills/technical-analysis && python3 scripts/analyze.py AAPL
 cd skills/backtester && python3 scripts/backtest.py --spec assets/strategies/donchian-breakout.json \
     --universe SPY,QQQ,GLD,TLT --start 2008-01-01 --oos-start 2018-01-01 --report donchian.html
 ```
+
+## What you can trade
+
+Not just stocks. Anything with price bars works, on most exchanges in the world:
+
+| asset | examples (Yahoo format) |
+|---|---|
+| Stocks and ETFs | `AAPL`, `SPY`, `RELIANCE.NS`, `HSBA.L`, `SAP.DE`, `7203.T`, `0700.HK`, `BHP.AX` |
+| Indices | `^GSPC`, `^NDX`, `^NSEI`, `^FTSE`, `^N225` |
+| Crypto | `BTC-USD`, `ETH-USD`, `SOL-USD` |
+| Forex | `EURUSD=X`, `USDJPY=X`, `USDINR=X` |
+| Futures (continuous) | `ES=F`, `NQ=F`, `GC=F`, `CL=F` |
+
+Position sizing handles shares, futures lots and multipliers, and fractional crypto. Bring your own CSVs for
+anything else. Options are on the roadmap.
 
 ## What it costs
 
@@ -168,7 +194,7 @@ Each skill works installed on its own; `tools/sync_core.py` vendors the core int
 
 ## Roadmap
 
-v0.1 ships the 15 core skills. Next waves (contributions welcome):
+**v0.1.0** (this release) ships the 15 core skills. Later releases add the next waves (contributions welcome):
 
 - **Brokers & data:** Alpaca, Interactive Brokers, crypto exchanges via CCXT, Upstox, Angel One, Fyers, Binance; Kite live ticks
 - **Research:** walk-forward optimizer, parameter-robustness heatmaps, overfitting checks (deflated Sharpe, PBO), forward paper-trading runner

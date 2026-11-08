@@ -14,3 +14,7 @@ First release: 15 skills on a zero-dependency core.
 - **Brokers:** paper (default, OCO exits, resting orders), Zerodha Kite (orders, GTT stops).
 - **Safety:** preview -> confirm code -> submit, kill switch, live-trading switch, audit log.
 - **Distribution:** Claude Code plugin marketplace, skills.sh, `.skill` packages for claude.ai.
+- **Docs:** full usage guide in `docs/USAGE.md`.
+- **Robustness:** HTTPS falls back to the operating system's CA bundle when Python ships without
+  root certificates (python.org macOS installer); verification is never disabled.
+- **Kite:** limit, stop and GTT prices are validated against the instrument's tick size at preview time.

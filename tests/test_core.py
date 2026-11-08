@@ -458,6 +458,72 @@ class TestKiteMapping(unittest.TestCase):
         with self.assertRaises(BrokerError):
             kb.to_kite_params({"symbol": "NSE:INFY", "side": "buy", "qty": 1.5, "type": "market"})
 
+    def test_tick_rounding(self):
+        from decimal import Decimal
+        from tradekit.brokers.kite import on_tick, round_to_tick
+        t = Decimal("0.05")
+        self.assertTrue(on_tick(1443.25, t))
+        self.assertFalse(on_tick(1443.27, t))
+        self.assertEqual(round_to_tick(1443.27, t, "down"), 1443.25)
+        self.assertEqual(round_to_tick(1443.27, t, "up"), 1443.30)
+        self.assertEqual(round_to_tick(1443.27, t), 1443.25)
+        self.assertEqual(round_to_tick(1443.28, t), 1443.30)
+        self.assertEqual(round_to_tick(0.3, Decimal("0.1"), "down"), 0.3)  # no float drift
+
+    def test_off_tick_prices_rejected_and_instrument_tick_used(self):
+        from tradekit.brokers.kite import KiteBroker
+
+        class NoListClient:  # instrument list unavailable -> default 0.05 tick
+            pass
+
+        kb = KiteBroker(client=NoListClient())
+        with self.assertRaises(BrokerError) as cm:
+            kb.to_kite_params({"symbol": "NSE:INFY", "side": "buy", "qty": 1, "type": "limit", "limit_price": 1500.03})
+        self.assertIn("1500 or 1500.05", str(cm.exception))
+        with self.assertRaises(BrokerError):
+            kb.to_kite_params({"symbol": "NSE:INFY", "side": "sell", "qty": 1, "type": "stop", "stop_price": 1490.02})
+        kb.to_kite_params({"symbol": "NSE:INFY", "side": "buy", "qty": 1, "type": "market"})  # no price, no check
+
+        class ListClient:
+            def instruments(self, exchange=None):
+                return [{"tradingsymbol": "PENNY", "tick_size": "0.01"}]
+
+        kb = KiteBroker(client=ListClient())
+        p = kb.to_kite_params({"symbol": "NSE:PENNY", "side": "buy", "qty": 1, "type": "limit", "limit_price": 12.37})
+        self.assertEqual(p["price"], 12.37)
+
+    def test_protect_plan_limit_on_tick(self):
+        from tradekit.brokers.kite import KiteBroker
+
+        class NoListClient:
+            pass
+
+        kb = KiteBroker(client=NoListClient())
+        plan = kb.protect_plan("NSE:INFY", 1450, buffer_pct=0.5)  # 1450 * 0.995 = 1442.75
+        self.assertEqual(plan["limit"], 1442.75)
+        plan = kb.protect_plan("NSE:INFY", 1451.15, buffer_pct=0.5)  # 1443.894.. -> down to 1443.85
+        self.assertEqual(plan["limit"], 1443.85)
+        with self.assertRaises(BrokerError):
+            kb.protect_plan("NSE:INFY", 1451.13)
+
+
+class TestHttpSSL(unittest.TestCase):
+    def test_falls_back_to_system_bundle_when_store_empty(self):
+        import ssl
+        from unittest import mock
+        from tradekit import http
+        if not any(os.path.isfile(b) for b in http.SYSTEM_CA_BUNDLES):
+            self.skipTest("no system CA bundle on this machine")
+        empty = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)  # verifying, but no CA certs loaded
+        env = {k: v for k, v in os.environ.items() if k not in ("SSL_CERT_FILE", "SSL_CERT_DIR")}
+        with mock.patch.object(http, "_SSL_CONTEXT", None), \
+                mock.patch.object(http.ssl, "create_default_context", return_value=empty), \
+                mock.patch.dict(os.environ, env, clear=True):
+            ctx = http.ssl_context()
+        self.assertEqual(ctx.verify_mode, ssl.CERT_REQUIRED)
+        self.assertTrue(ctx.check_hostname)
+        self.assertTrue(ctx.get_ca_certs())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -55,8 +55,9 @@ def cmd_preview(a):
             cli.fail("--protect places a Kite GTT stop; paper orders carry stop_loss directly")
         if not (a.symbol and a.qty and a.stop_price):
             cli.fail("--protect needs --symbol --qty --stop-price")
+        plan = broker.protect_plan(a.symbol, a.stop_price)  # fails here, before a confirm code, on a bad tick
         pending = {"kind": "protect", "symbol": a.symbol, "qty": int(a.qty), "stop": a.stop_price,
-                   "product": a.product or cfg["broker"].get("default_product") or "CNC"}
+                   "limit": plan["limit"], "product": a.product or cfg["broker"].get("default_product") or "CNC"}
     else:
         order = {"symbol": a.symbol, "side": a.side, "qty": a.qty, "type": a.type or cfg["broker"]["default_order_type"],
                  "limit_price": a.limit_price, "stop_price": a.stop_price, "stop_loss": a.stop_loss,
@@ -109,7 +110,8 @@ def md_preview(p):
     mode = "LIVE - REAL MONEY" if p["live"] else "PAPER (simulated)"
     out = [f"## Order preview [{mode}] via {p['broker']}", ""]
     if p["kind"] == "protect":
-        out.append(f"GTT stop-loss: SELL {p['qty']} {p['symbol']} if price <= {p['stop']} ({p['product']})")
+        out.append(f"GTT stop-loss: SELL {p['qty']} {p['symbol']} if price <= {p['stop']}"
+                   + (f", limit {p['limit']}" if p.get("limit") is not None else "") + f" ({p['product']})")
     else:
         o = p["order"]
         px = o.get("limit_price") or o.get("stop_price") or "market"

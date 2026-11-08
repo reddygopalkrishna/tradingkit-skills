@@ -1,0 +1,578 @@
+# trading-skills usage guide
+
+This guide takes you from install to your first paper trade, then covers every skill in detail.
+You can use the pack two ways:
+
+1. **Talk to your agent** (Claude Code, claude.ai, Codex, Cursor, Gemini CLI). The agent reads each
+   skill's `SKILL.md` and runs the scripts for you. This is the normal way.
+2. **Run the scripts yourself** from a terminal. Every command below works on its own, which is useful
+   for scripting, scheduling and checking what the agent did.
+
+All script paths below are relative to the skill's folder, e.g. `cd skills/technical-analysis` first.
+
+---
+
+## Contents
+
+1. [Install](#1-install)
+2. [First 10 minutes](#2-first-10-minutes)
+3. [What you can trade: symbols for any market](#3-what-you-can-trade-symbols-for-any-market)
+4. [Configuration and risk limits](#4-configuration-and-risk-limits)
+5. [The skills, one by one](#5-the-skills-one-by-one)
+6. [Complete workflow: idea to journal](#6-complete-workflow-idea-to-journal)
+7. [Live trading with Zerodha Kite](#7-live-trading-with-zerodha-kite)
+8. [Using your own data (CSV)](#8-using-your-own-data-csv)
+9. [Automation and scheduling](#9-automation-and-scheduling)
+10. [Files and where things live](#10-files-and-where-things-live)
+11. [Troubleshooting](#11-troubleshooting)
+12. [FAQ](#12-faq)
+
+---
+
+## 1. Install
+
+Requirements: **Python 3.9 or newer**. Nothing to `pip install`; the pack uses only the standard library.
+
+```bash
+python3 --version
+```
+
+**Claude Code (plugin marketplace)**
+
+```text
+/plugin marketplace add reddygopalkrishna/trading-skills
+/plugin install trading-skills@trading-skills
+```
+
+**Any agent via skills.sh** (Claude Code, Codex, Cursor, Gemini CLI and others)
+
+```bash
+npx skills add reddygopalkrishna/trading-skills
+```
+
+**claude.ai / Claude desktop app**
+
+1. Download the `.skill` files (or `trading-skills-all.zip`) from the
+   [latest release](https://github.com/reddygopalkrishna/trading-skills/releases).
+2. Open *Settings -> Capabilities* and make sure code execution is on.
+3. Upload each `.skill` under *Customize -> Skills*. Start with `trading-navigator`, `trading-setup`,
+   `market-data` and `technical-analysis`, then add the rest.
+
+**Manual (any agent that reads a skills folder)**
+
+```bash
+git clone https://github.com/reddygopalkrishna/trading-skills
+cp -r trading-skills/skills/* ~/.claude/skills/     # or ~/.codex/skills, ~/.cursor/skills, ~/.gemini/skills
+```
+
+Each skill folder is self-contained (it carries its own copy of the shared engine), so you can install
+only the skills you want.
+
+---
+
+## 2. First 10 minutes
+
+### Step 1 - check your machine
+
+```bash
+cd skills/trading-setup
+python3 scripts/setup.py doctor
+```
+
+Every line should say `OK`. If `data_provider` fails with a certificate error, see
+[Troubleshooting](#11-troubleshooting).
+
+### Step 2 - tell it about your account
+
+Pick your own currency and a benchmark index for your market:
+
+```bash
+python3 scripts/setup.py init --equity 50000 --currency USD --benchmark SPY       # US
+python3 scripts/setup.py init --equity 500000 --currency INR --benchmark ^NSEI    # India
+python3 scripts/setup.py init --equity 20000 --currency GBP --benchmark ^FTSE     # UK
+python3 scripts/setup.py init --equity 10000 --currency USD --benchmark BTC-USD   # crypto
+```
+
+Or just say to your agent: *"Set up trading-skills: 50,000 USD account, benchmark SPY, risk 1% per trade."*
+
+### Step 3 - look at the market and a chart
+
+```bash
+cd ../market-regime && python3 scripts/regime.py
+cd ../technical-analysis && python3 scripts/analyze.py AAPL
+```
+
+### Step 4 - plan, check and paper-trade one idea
+
+```bash
+cd ../trade-planner && python3 scripts/plan.py AAPL --save --setup "pullback" --thesis "holding 50-day"
+cd ../pre-trade-gate && python3 scripts/gate.py check --plan 1
+cd ../order-router && python3 scripts/router.py preview --symbol AAPL --side buy --qty 10 \
+    --type limit --limit-price 340 --stop-loss 330 --take-profit 365
+# read the preview, then use the code it printed:
+python3 scripts/router.py submit --confirm ABC123
+python3 scripts/router.py process      # fills resting paper orders against new prices
+```
+
+The gate approval and the preview must match exactly (symbol, side, quantity, stop). Use the
+values the planner printed.
+
+You have now used the full safety flow on paper, at zero cost.
+
+---
+
+## 3. What you can trade: symbols for any market
+
+The default data source is Yahoo Finance, which covers most of the world. Use Yahoo's symbol format:
+
+| market | format | examples |
+|---|---|---|
+| US stocks and ETFs | ticker | `AAPL`, `MSFT`, `SPY`, `QQQ` |
+| India (NSE / BSE) | `.NS` / `.BO` | `RELIANCE.NS`, `INFY.NS`, `TCS.BO` |
+| UK (London) | `.L` | `HSBA.L`, `VOD.L` |
+| Germany (Xetra) | `.DE` | `SAP.DE`, `BMW.DE` |
+| France (Paris) | `.PA` | `MC.PA`, `AIR.PA` |
+| Japan (Tokyo) | `.T` | `7203.T` (Toyota) |
+| Hong Kong | `.HK` | `0700.HK` (Tencent) |
+| Canada (Toronto) | `.TO` | `SHOP.TO`, `RY.TO` |
+| Australia (ASX) | `.AX` | `BHP.AX`, `CBA.AX` |
+| Indices | `^` prefix | `^GSPC` (S&P 500), `^NDX`, `^NSEI` (Nifty 50), `^FTSE`, `^N225` |
+| Crypto | `COIN-QUOTE` | `BTC-USD`, `ETH-USD`, `SOL-USD` |
+| Forex | `PAIR=X` | `EURUSD=X`, `USDJPY=X`, `USDINR=X` |
+| Futures (continuous) | `=F` | `ES=F`, `NQ=F`, `GC=F` (gold), `CL=F` (crude) |
+
+When you trade through a broker, use the **broker's** format for orders (for Kite: `NSE:INFY`).
+
+Bundled watchlists (in `assets/watchlists/` of the screener, patterns, regime and navigator skills):
+`us-mega-caps.txt`, `global-large-caps.txt`, `global-index-etfs.txt`, `world-indices.txt`,
+`crypto-majors.txt`. A watchlist is a plain text file with one symbol per line; `#` starts a comment.
+
+---
+
+## 4. Configuration and risk limits
+
+```bash
+cd skills/trading-setup
+python3 scripts/setup.py show                              # everything, with defaults
+python3 scripts/setup.py get risk.risk_per_trade_pct
+python3 scripts/setup.py set risk.risk_per_trade_pct 0.5
+python3 scripts/setup.py set account.benchmark ^NSEI
+```
+
+Defaults (change any of them):
+
+| key | default | meaning |
+|---|---|---|
+| `risk.risk_per_trade_pct` | 1.0 | max % of equity lost if the stop is hit |
+| `risk.max_position_pct` | 20 | max position value as % of equity |
+| `risk.max_open_risk_pct` | 6 | total open risk across all positions ("portfolio heat") |
+| `risk.max_open_positions` | 8 | position count limit |
+| `risk.max_daily_loss_pct` | 3 | stop opening trades after losing this much today |
+| `risk.max_drawdown_pct` | 15 | stop opening trades below this drawdown from peak |
+| `risk.min_reward_risk` | 1.5 | minimum target-to-stop ratio |
+| `risk.max_consecutive_losses` | 3 | pause after this many losses in a row |
+| `risk.approval_ttl_minutes` | 30 | how long a gate PASS stays valid |
+| `risk.confirm_ttl_minutes` | 10 | how long an order confirm code stays valid |
+| `costs.commission_pct` | 0.03 | % of notional per side (backtests, paper) |
+| `costs.slippage_pct` | 0.05 | % per fill (backtests, paper) |
+| `data.provider` | yahoo | `yahoo`, `csv` or `kite` |
+| `broker.name` | paper | `paper` or `kite` |
+
+Settings live in `~/.trading-skills/config.json`. Set `TRADING_SKILLS_HOME` to keep separate
+setups (for example one per account).
+
+---
+
+## 5. The skills, one by one
+
+Each skill's own `SKILL.md` has the full reference; this section shows the commands you will use most.
+Add `--json` to almost any command for machine-readable output, and `--help` for every option.
+
+### trading-navigator - start here
+
+Routes a goal to the right skills and produces a daily brief: regime, risk dashboard, open positions
+versus their stops, screen hits and live chart patterns.
+
+```bash
+python3 scripts/brief.py --watchlist assets/watchlists/us-mega-caps.txt
+python3 scripts/brief.py --watchlist my.txt --preset trend-template --patterns vcp,breakout --report brief.html
+```
+
+Ask: *"What should I look at today?"* or *"Give me my morning brief."*
+
+### trading-setup - account, risk limits, broker
+
+```bash
+python3 scripts/setup.py init --equity 50000 --currency USD --benchmark SPY
+python3 scripts/setup.py doctor --symbol AAPL
+python3 scripts/setup.py paper-reset --cash 100000
+python3 scripts/setup.py live on --i-understand-the-risks      # only for a real broker; see section 7
+```
+
+### market-data - prices for any symbol
+
+```bash
+python3 scripts/data.py quote AAPL RELIANCE.NS BTC-USD EURUSD=X ^GSPC
+python3 scripts/data.py bars AAPL --interval 1d --period 1y
+python3 scripts/data.py bars BTC-USD --interval 1h --period 1mo --out btc.csv
+python3 scripts/data.py bars INFY.NS --start 2020-01-01 --end 2024-12-31 --json
+python3 scripts/data.py many --universe watchlist.txt --period 2y      # warm the cache
+python3 scripts/data.py clear-cache
+```
+
+Intervals: `1m 2m 5m 15m 30m 60m 1h 1d 1wk 1mo`. Yahoo limits intraday history (about 7 days for
+`1m`, about 60 days for other minute bars).
+
+### technical-analysis - read one chart
+
+Trend stage, moving averages, RSI, MACD, ADX, ATR, Bollinger squeeze, Supertrend, OBV, support and
+resistance, and a daily-versus-weekly check, rolled into an explained bias score.
+
+```bash
+python3 scripts/analyze.py AAPL
+python3 scripts/analyze.py INFY.NS --period 5y
+python3 scripts/analyze.py BTC-USD --interval 1h --period 3mo --no-mtf
+python3 scripts/analyze.py AAPL --eval "close > sma(200) and rsi(14) < 40"
+```
+
+### chart-patterns - find setups with a pivot and stop
+
+VCP, breakout on volume, bull flag, cup and handle, double bottom, inside bar, NR7, pocket pivot.
+
+```bash
+python3 scripts/patterns.py --list
+python3 scripts/patterns.py AAPL NVDA MSFT --patterns vcp,cup_handle --min-score 60
+python3 scripts/patterns.py --universe assets/watchlists/global-large-caps.txt --min-score 70
+```
+
+### market-regime - should you be aggressive or defensive?
+
+Scores trend, volatility, drawdown and (optionally) breadth and suggests an exposure level.
+
+```bash
+python3 scripts/regime.py                                     # your configured benchmark
+python3 scripts/regime.py --index ^GSPC ^NSEI ^FTSE ^N225      # compare markets
+python3 scripts/regime.py --index ^GSPC --universe assets/watchlists/us-mega-caps.txt
+```
+
+### stock-screener - scan a list with rules
+
+Describe what you want in words and the agent turns it into the rule language, or use a preset.
+
+```bash
+python3 scripts/screen.py --presets                    # list the 14 presets
+python3 scripts/screen.py --universe assets/watchlists/us-mega-caps.txt --preset trend-template
+python3 scripts/screen.py AAPL MSFT NVDA --rule "close > sma(200) and rsi(2) < 10" --rank "-rsi(2)"
+python3 scripts/screen.py --universe my.txt --rule "rel_volume(50) > 2 and close > shift(high, 1)" --min-price 5
+python3 scripts/screen.py --functions                  # every function the rule language supports
+python3 scripts/screen.py --check "cross_above(ema(20), ema(50))"
+```
+
+The rule language is a safe, whitelisted expression language: `and or not`, comparisons, arithmetic and
+functions such as `sma ema rsi atr adx macd_hist bb_width highest lowest shift cross_above
+pct_from_high rel_volume roc`. It cannot run arbitrary code.
+
+### trade-planner - turn an idea into exact numbers
+
+Entry, stop options, targets, reward-to-risk, invalidation and position size.
+
+```bash
+python3 scripts/plan.py AAPL                                        # auto stop and targets
+python3 scripts/plan.py AAPL --entry 195.5 --stop 188 --target 215
+python3 scripts/plan.py NVDA --entry pivot --stop pattern            # from the best live pattern
+python3 scripts/plan.py TSLA --side short --stop atr:2.5 --target r:2
+python3 scripts/plan.py BTC-USD --stop pct:6 --fractional --lot 0.0001
+python3 scripts/plan.py ES=F --stop atr:1.5 --multiplier 50 --lot 1
+python3 scripts/plan.py AAPL --regime-adjust --save --setup "VCP breakout" --thesis "3rd contraction"
+```
+
+`--save` stores the plan in the journal so the gate can check it with `--plan ID`.
+
+### position-sizer - how much to buy
+
+```bash
+python3 scripts/size.py risk --equity 50000 --entry 120 --stop 114 --risk-pct 1
+python3 scripts/size.py risk --equity 2000000 --entry 22500 --stop 22350 --lot 50 --margin-pct 12   # futures lots
+python3 scripts/size.py risk --equity 10000 --entry 64000 --stop 61000 --fractional --lot 0.0001     # crypto
+python3 scripts/size.py table --equity 50000 --entry 120 --stop 114
+python3 scripts/size.py kelly --win-rate 0.45 --payoff 2.2
+python3 scripts/size.py vol --equity 100000 --price 50 --annual-vol 35 --target-vol 10
+python3 scripts/size.py ruin --win-rate 0.45 --payoff 2 --risk-pct 1 --ruin-pct 30
+```
+
+### pre-trade-gate - your rules, enforced
+
+Runs hard checks (stop present, risk per trade, reward-to-risk, position size, portfolio heat, position
+count, duplicates, daily loss, losing streak, drawdown, kill switch). A PASS writes a short-lived
+approval for that exact symbol, side, quantity and stop; the order router will not open a position
+without it.
+
+```bash
+python3 scripts/gate.py check --symbol AAPL --side long --entry 195 --stop 188 --target 212 --qty 70 --setup VCP
+python3 scripts/gate.py check --symbol AAPL --side long --entry 195 --stop 188 --target 212 --auto-size
+python3 scripts/gate.py check --plan 12
+python3 scripts/gate.py status          # risk dashboard
+```
+
+### order-router - place orders safely
+
+Two steps, always: **preview** prints the order and a one-time confirm code; **submit** needs that
+code. Paper broker by default.
+
+```bash
+python3 scripts/router.py preview --symbol AAPL --side buy --qty 70 --type limit --limit-price 195 \
+    --stop-loss 188 --take-profit 212
+python3 scripts/router.py submit --confirm 7KQ2XD
+python3 scripts/router.py preview --symbol AAPL --side sell --qty 70 --type market --close   # exit
+python3 scripts/router.py account
+python3 scripts/router.py positions
+python3 scripts/router.py orders --open
+python3 scripts/router.py cancel P1a2b3c4d5
+python3 scripts/router.py process                   # paper: fill orders, trigger stops/targets, sync journal
+python3 scripts/router.py kill on --reason "stepping away"
+python3 scripts/router.py kill on --flatten         # also cancel orders and close paper positions
+python3 scripts/router.py kill off
+```
+
+Order types: `market`, `limit`, `stop`, `stop_limit`. On paper, `--stop-loss` and `--take-profit` become
+a one-cancels-other exit pair after the entry fills.
+
+### backtester - test a strategy on history
+
+Portfolio backtests with no look-ahead, commissions, slippage, stops, targets, trailing stops,
+ranking, position limits and an optional out-of-sample split. Six example strategies ship in
+`assets/strategies/`.
+
+```bash
+python3 scripts/backtest.py --spec assets/strategies/donchian-breakout.json \
+    --universe SPY,QQQ,GLD,TLT --start 2008-01-01 --oos-start 2018-01-01 --report donchian.html
+python3 scripts/backtest.py --entry "cross_above(ema(20), ema(50))" --exit "cross_below(ema(20), ema(50))" \
+    --stop atr:3 --start 2010-01-01 SPY
+python3 scripts/backtest.py --spec my.json --universe list.txt --set n=10 --set mult=2.5
+python3 scripts/backtest.py --spec my.json --trades-csv trades.csv     # feed monte-carlo-sim / performance-review
+```
+
+The strategy file format is documented in `skills/backtester/references/strategy-spec.md`. Read the
+caveats the report prints (trade count, survivorship bias, missing out-of-sample period).
+
+### monte-carlo-sim - odds and ranges
+
+```bash
+python3 scripts/mc.py setup AAPL --entry 195 --stop 188 --target 212 --horizon 20      # target before stop?
+python3 scripts/mc.py trades --journal --risk-pct 1 --trades 100                       # drawdown ranges
+python3 scripts/mc.py trades --csv trades.csv --risk-pct 0.5 --report mc.html
+python3 scripts/mc.py trades --r "2.1,-1,-1,0.4,3,-1,-0.6,1.8,-1,2.5" --trades 200
+```
+
+### trade-journal - record every trade
+
+```bash
+python3 scripts/journal.py plan --symbol AAPL --side long --entry 195 --stop 188 --target 212 --qty 70 --setup VCP
+python3 scripts/journal.py open --id 3 --price 195.4 --qty 70
+python3 scripts/journal.py close --id 3 --price 209.8 --reason target --fees 2.5
+python3 scripts/journal.py note --id 3 --text "moved stop to breakeven" --grade A --tags discipline
+python3 scripts/journal.py list --status open
+python3 scripts/journal.py import --file broker_trades.csv
+python3 scripts/journal.py export --file trades.csv
+```
+
+Paper fills are journaled automatically by the order router.
+
+### performance-review - learn from your results
+
+Win rate, average R, expectancy, profit factor and drawdown, broken down by setup, side and month, plus
+coaching on common leaks (cutting winners early, holding losers, ignoring stops).
+
+```bash
+python3 scripts/review.py
+python3 scripts/review.py --period week
+python3 scripts/review.py --since 2026-01-01 --report review.html
+python3 scripts/review.py --setup VCP
+```
+
+---
+
+## 6. Complete workflow: idea to journal
+
+A typical session, in plain words to your agent:
+
+1. *"How's the market?"* - **market-regime** sets how aggressive to be.
+2. *"Scan my watchlist for stocks near 52-week highs with rising volume."* - **stock-screener**.
+3. *"Any VCPs or flags among those?"* - **chart-patterns**.
+4. *"Analyze the best one, daily and weekly."* - **technical-analysis**.
+5. *"Plan a long with 1% risk and save it."* - **trade-planner** (sizes it, saves to the journal).
+6. *"Check it against my rules."* - **pre-trade-gate** (PASS or a list of reasons it is blocked).
+7. *"What are the odds it hits 2R before the stop?"* - **monte-carlo-sim** (optional).
+8. *"Paper-buy it."* - **order-router** shows a preview and a confirm code; you say *"confirm"*.
+9. Later: *"Process paper orders"* and *"Review my trades this week."* - **order-router**,
+   **performance-review**.
+
+The agent cannot skip steps 6 and 8: the router refuses opening orders without a matching gate
+approval, and every submission needs the confirm code from a preview you have seen.
+
+---
+
+## 7. Live trading with Zerodha Kite
+
+Zerodha Kite is the first live broker. Others are on the roadmap; the broker interface
+(`core/tradekit/brokers/base.py`) is small, so adding one is a contained change.
+
+**Plans.** Kite's free *Personal* API plan covers orders, GTT and portfolio. Historical and live market
+data need the paid *Connect* plan; without it, keep `data.provider` set to `yahoo`.
+
+**Before you start.** Check your broker's and regulator's current rules for API trading (for example a
+registered static IP or algorithm identifiers). These are your responsibility.
+
+1. Create an app at the Kite developer console and note the API key and secret.
+2. Save the credentials (stored in `~/.trading-skills/secrets.json` with permissions 600; environment
+   variables `KITE_API_KEY`, `KITE_API_SECRET`, `KITE_ACCESS_TOKEN` take precedence):
+
+   ```bash
+   cd skills/trading-setup
+   python3 scripts/setup.py kite-login --api-key YOUR_KEY --api-secret YOUR_SECRET
+   ```
+
+3. Open the login URL it prints, log in, and copy `request_token` from the redirect URL. Then:
+
+   ```bash
+   python3 scripts/setup.py kite-session --request-token THE_TOKEN
+   ```
+
+   Kite access tokens expire every day, so repeat steps 3 each trading morning.
+
+4. Point the pack at Kite and set your defaults:
+
+   ```bash
+   python3 scripts/setup.py set broker.name kite
+   python3 scripts/setup.py set broker.default_exchange NSE
+   python3 scripts/setup.py set broker.default_product CNC
+   python3 scripts/setup.py doctor
+   ```
+
+5. Turn on live trading explicitly. Until you do, the router refuses to send live orders:
+
+   ```bash
+   python3 scripts/setup.py live on --i-understand-the-risks
+   ```
+
+**Placing orders.** Symbols use Kite's format: `NSE:INFY`. Limit and stop prices must be on the
+instrument's tick size; the preview rejects prices that are not and suggests valid ones. Kite entry
+orders do not carry a stop, so after the entry fills place a protective GTT stop:
+
+```bash
+cd skills/order-router
+python3 scripts/router.py preview --symbol NSE:INFY --side buy --qty 10 --type limit --limit-price 1500 --stop-loss 1450
+python3 scripts/router.py submit --confirm CODE
+python3 scripts/router.py preview --protect --symbol NSE:INFY --qty 10 --stop-price 1450
+python3 scripts/router.py submit --confirm CODE2
+```
+
+**Recommended first steps.** Paper-trade the same workflow first, then place one very small live order
+and check it in the Kite app before you rely on the integration.
+
+Turn live trading off any time with `setup.py live off`, or halt everything with `router.py kill on`.
+
+---
+
+## 8. Using your own data (CSV)
+
+Point the pack at a folder of `SYMBOL.csv` files (columns `date,open,high,low,close,volume`;
+the header names are matched case-insensitively):
+
+```bash
+cd skills/trading-setup
+python3 scripts/setup.py set data.provider csv
+python3 scripts/setup.py set data.csv_dir /path/to/folder
+```
+
+Or per command: `--provider csv`, `--csv file.csv --symbol XYZ` (analysis, patterns, regime), or
+`--csv-dir ./data` (backtester). This works for any market, including ones Yahoo does not cover, and
+for fully offline research.
+
+---
+
+## 9. Automation and scheduling
+
+Read-only and paper tasks are safe to schedule:
+
+| task | command |
+|---|---|
+| morning brief | `trading-navigator/scripts/brief.py --watchlist my.txt --report brief.html` |
+| scans | `stock-screener/scripts/screen.py --universe my.txt --preset trend-template --save hits.txt` |
+| paper fills | `order-router/scripts/router.py process` |
+| weekly review | `performance-review/scripts/review.py --period week --report week.html` |
+
+Use cron, launchd, Task Scheduler or your agent's scheduled tasks. Live order submission always keeps a
+human confirmation step by design. See `skills/trading-navigator/references/workflows.md` for daily and
+weekly routines.
+
+---
+
+## 10. Files and where things live
+
+Everything is under `~/.trading-skills/` (or `TRADING_SKILLS_HOME`):
+
+| path | contents |
+|---|---|
+| `config.json` | your settings and risk limits |
+| `secrets.json` | broker credentials (permissions 600) |
+| `cache/` | downloaded market data |
+| `journal.db` | SQLite trade journal |
+| `paper/` | paper broker account and orders |
+| `approvals/` | gate approvals waiting to be used |
+| `pending/` | order previews waiting for a confirm code |
+| `audit.log` | JSON lines: every preview, submit, cancel and gate decision |
+| `KILL_SWITCH` | exists while the kill switch is on |
+
+Back up `journal.db` and `config.json` if your history matters to you.
+
+---
+
+## 11. Troubleshooting
+
+**`CERTIFICATE_VERIFY_FAILED`** - Python cannot find root certificates. The pack falls back to your
+operating system's certificate bundle automatically; if that still fails, on macOS run
+*Install Certificates.command* from your Python folder (`/Applications/Python 3.x/`), or set
+`SSL_CERT_FILE` to a CA bundle.
+
+**`no index: pass --index SYMBOL`** - set a benchmark once:
+`setup.py set account.benchmark ^GSPC` (use your market's index).
+
+**Empty or missing data** - check the symbol format in [section 3](#3-what-you-can-trade-symbols-for-any-market).
+Yahoo's endpoint is unofficial; if it is rate-limiting you, wait a few minutes or run
+`data.py clear-cache` if you suspect a bad cached file.
+
+**`no valid pre-trade-gate approval`** - the preview must match the gate check exactly (symbol, side,
+quantity, stop), and approvals expire after `risk.approval_ttl_minutes`. Run the gate again.
+
+**`no pending order with code`** - confirm codes are single-use and expire after
+`risk.confirm_ttl_minutes`. Preview again.
+
+**`KILL SWITCH is ON`** - `router.py kill status` shows why; `router.py kill off` resumes.
+
+**Kite `403`** - the access token expired (log in again) or your plan does not include that API.
+
+Still stuck? Open an issue with the command, the full output and `setup.py doctor` output.
+
+---
+
+## 12. FAQ
+
+**Is it only for stocks?** No. Anything with price bars works: stocks and ETFs on most exchanges,
+indices, forex, crypto and continuous futures. Position sizing handles share counts, futures lots and
+multipliers, and fractional crypto quantities.
+
+**Do I need an API key or to pay anything?** No. Data (Yahoo), the paper broker, analysis, screening,
+backtesting and the journal are free with no account. You only pay a broker if you choose a paid data
+plan, such as Kite Connect.
+
+**Does the AI make up the numbers?** No. Every indicator, size, backtest and probability is computed by
+the tested Python scripts; the agent explains the results.
+
+**Can the agent trade without me?** Not for live orders. Each order needs a confirm code from a preview,
+and opening orders need a fresh gate PASS. You can schedule analysis and paper processing.
+
+**Options?** Not yet; an options strategy builder is on the roadmap.
+
+**Is this financial advice?** No. It is educational and research software. You are responsible for
+every decision and order.

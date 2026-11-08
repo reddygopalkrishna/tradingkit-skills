@@ -4,7 +4,7 @@
 Examples
   python3 scripts/backtest.py --spec assets/strategies/rsi2-pullback.json --universe AAPL,MSFT,NVDA
   python3 scripts/backtest.py --entry "cross_above(ema(20), ema(50))" --exit "cross_below(ema(20), ema(50))" \
-      --stop atr:3 --symbols SPY --start 2010-01-01 --report sma_cross.html
+      --stop atr:3 --start 2010-01-01 --report sma_cross.html SPY
   python3 scripts/backtest.py --spec my.json --universe list.txt --set n=10 --set mult=2.5 --oos-start 2021-01-01
   python3 scripts/backtest.py --spec my.json --csv-dir ./data --universe A,B,C --json
 """

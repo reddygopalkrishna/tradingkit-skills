@@ -20,6 +20,7 @@ import hashlib
 import io
 import json
 import time
+from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import Dict, List, Optional, Sequence
 
 from .. import config, http
@@ -154,6 +155,25 @@ def split_symbol(symbol: str):
 
 _TYPE_MAP = {"market": "MARKET", "limit": "LIMIT", "stop": "SL-M", "stop_limit": "SL"}
 
+# Used when the instrument list (which carries each symbol's tick_size) is unavailable.
+# 0.05 is a multiple of the common 0.01 tick, so prices on it are valid for both.
+DEFAULT_TICK = Decimal("0.05")
+
+
+def _dec(x) -> Decimal:
+    return Decimal(str(x))
+
+
+def on_tick(price: float, tick: Decimal) -> bool:
+    return (_dec(price) % tick) == 0
+
+
+def round_to_tick(price: float, tick: Decimal, mode: str = "nearest") -> float:
+    """Round a price to the tick grid. mode: nearest | down | up."""
+    rounding = {"nearest": ROUND_HALF_UP, "down": ROUND_FLOOR, "up": ROUND_CEILING}[mode]
+    steps = (_dec(price) / tick).quantize(Decimal(1), rounding=rounding)
+    return float(steps * tick)
+
 
 class KiteBroker(Broker):
     name = "kite"
@@ -214,11 +234,36 @@ class KiteBroker(Broker):
                         "created": o.get("order_timestamp"), "message": o.get("status_message")})
         return out
 
+    def tick_size(self, exch: str, ts: str) -> Decimal:
+        """The instrument's tick size from Kite's instrument list, else DEFAULT_TICK."""
+        try:
+            for row in self.client.instruments(exch):
+                if row.get("tradingsymbol") == ts:
+                    tick = _dec(row.get("tick_size") or "0")
+                    if tick > 0:
+                        return tick
+                    break
+        except (BrokerError, AttributeError, RuntimeError, OSError, InvalidOperation, ValueError):
+            pass
+        return DEFAULT_TICK
+
+    def _check_tick(self, label: str, price: float, tick: Decimal) -> None:
+        if not on_tick(price, tick):
+            lo, hi = round_to_tick(price, tick, "down"), round_to_tick(price, tick, "up")
+            raise BrokerError(f"{label} {price:g} is not a multiple of the tick size {tick} - "
+                              f"use {lo:g} or {hi:g}")
+
     def to_kite_params(self, order: Dict) -> Dict:
         o = normalize_order(order)
         exch, ts = split_symbol(o["symbol"])
         if not float(o["qty"]).is_integer():
             raise BrokerError("Kite quantities must be whole numbers")
+        if o["type"] != "market":
+            tick = self.tick_size(exch, ts)
+            if o["type"] in ("limit", "stop_limit"):
+                self._check_tick("limit price", o["limit_price"], tick)
+            if o["type"] in ("stop", "stop_limit"):
+                self._check_tick("stop price", o["stop_price"], tick)
         product = (order.get("product") or self.cfg["broker"].get("default_product") or "CNC").upper()
         params = {"exchange": exch, "tradingsymbol": ts, "transaction_type": o["side"].upper(),
                   "quantity": int(o["qty"]), "order_type": _TYPE_MAP[o["type"]], "product": product,
@@ -238,13 +283,22 @@ class KiteBroker(Broker):
         data = self.client.cancel_order(order_id)
         return {"order_id": data.get("order_id", order_id), "status": "cancel_requested"}
 
+    def protect_plan(self, symbol: str, stop: float, buffer_pct: float = 0.5) -> Dict:
+        """Validate a GTT stop and compute its limit price (no network call except the cached instrument list)."""
+        exch, ts = split_symbol(symbol)
+        tick = self.tick_size(exch, ts)
+        self._check_tick("stop price", stop, tick)
+        # sell limit below the trigger, rounded down onto the tick grid so Kite accepts it
+        limit = round_to_tick(stop * (1 - buffer_pct / 100), tick, "down")
+        return {"exchange": exch, "tradingsymbol": ts, "trigger": stop, "limit": limit, "tick": str(tick)}
+
     def protect(self, symbol: str, qty: int, stop: float, product: str = "CNC", buffer_pct: float = 0.5) -> Dict:
         """Place a GTT stop-loss for an existing long holding."""
-        exch, ts = split_symbol(symbol)
+        plan = self.protect_plan(symbol, stop, buffer_pct)
+        exch, ts, limit = plan["exchange"], plan["tradingsymbol"], plan["limit"]
         try:
             last = float(self.client.ltp([f"{exch}:{ts}"])[f"{exch}:{ts}"]["last_price"])
         except (BrokerError, KeyError):
             last = stop * 1.05
-        limit = round(stop * (1 - buffer_pct / 100), 2)
         data = self.client.place_gtt_single(exch, ts, stop, last, "SELL", int(qty), product, limit)
         return {"gtt_id": data.get("trigger_id"), "status": "gtt_active", "trigger": stop, "limit": limit}
