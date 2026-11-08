@@ -192,6 +192,30 @@ core/tradekit/                    zero-dependency engine shared by all skills
 
 Each skill works installed on its own; `tools/sync_core.py` vendors the core into every skill and CI fails if a copy drifts.
 
+## FAQ
+
+**Is there a free trading skill pack for Claude Code, Codex, Cursor or Gemini CLI?**
+Yes. tradingkit-skills is free and MIT licensed, with 15 skills in the open Agent Skills format. Install with
+`npx skills add reddygopalkrishna/tradingkit-skills`.
+
+**Does it need an API key or a paid data subscription?**
+No. It uses free Yahoo Finance data and a built-in paper broker by default. A broker account is only needed for
+live orders.
+
+**Which markets and brokers does it support?**
+Any market Yahoo covers (US, India, UK, Europe, Japan, Hong Kong, Canada, Australia and more), plus forex, crypto,
+indices and futures, or your own CSV data. Brokers: the built-in paper broker and Zerodha Kite, with more planned.
+
+**Can an AI agent place trades on its own with this?**
+Not live trades. Every opening order needs a passing pre-trade risk gate and a one-time confirm code that you
+approve. Paper trading is the default.
+
+**How is this different from asking a chatbot for trade ideas?**
+The model never estimates numbers. Indicators, patterns, position sizes, backtests and probabilities come from
+tested Python code, so results are reproducible.
+
+More in the [usage guide FAQ](docs/USAGE.md#12-faq).
+
 ## Roadmap
 
 **v0.1.0** (this release) ships the 15 core skills. Later releases add the next waves (contributions welcome):

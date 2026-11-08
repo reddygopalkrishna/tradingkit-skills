@@ -7,3 +7,6 @@ dist/
 .venv/
 .tradingkit-skills/
 *.db
+
+# private launch and marketing drafts (not published)
+launch/

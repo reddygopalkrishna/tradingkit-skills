@@ -1,0 +1,48 @@
+# tradingkit-skills
+
+> Free, open-source (MIT) trading skills for AI agents - Claude Code, claude.ai, Codex, Cursor and Gemini CLI.
+> Works on any market (global stocks, ETFs, indices, forex, futures, crypto) and any broker. No API keys needed to
+> start: free Yahoo Finance data and a built-in paper-trading broker. Every number is computed by tested,
+> zero-dependency Python (standard library only), never estimated by the model. Orders go through a hard
+> pre-trade risk gate and a human-confirmed preview before submission.
+
+Install:
+- Claude Code: `/plugin marketplace add reddygopalkrishna/tradingkit-skills` then `/plugin install tradingkit-skills@tradingkit-skills`
+- Any agent (skills.sh): `npx skills add reddygopalkrishna/tradingkit-skills`
+- claude.ai: upload the `.skill` files from the GitHub releases page
+- Requires Python 3.9+; nothing to pip install
+
+## Docs
+
+- [README](https://github.com/reddygopalkrishna/tradingkit-skills/blob/main/README.md): overview, install, costs, safety model
+- [Usage guide](https://github.com/reddygopalkrishna/tradingkit-skills/blob/main/docs/USAGE.md): first paper trade, symbols for every market, every command, Kite live setup, troubleshooting, FAQ
+- [Changelog](https://github.com/reddygopalkrishna/tradingkit-skills/blob/main/CHANGELOG.md)
+
+## Skills
+
+- [trading-navigator](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/trading-navigator): routes a trading goal to the right skill; daily brief for scheduled runs
+- [trading-setup](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/trading-setup): account, currency, benchmark, risk limits, data provider, broker login
+- [market-data](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/market-data): OHLCV bars and quotes for any symbol, 1-minute to monthly
+- [technical-analysis](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/technical-analysis): trend stage, RSI, MACD, ADX, ATR, squeeze, Supertrend, support/resistance, multi-timeframe bias
+- [chart-patterns](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/chart-patterns): VCP, breakouts, bull flag, cup and handle, double bottom, inside bar, NR7, pocket pivot
+- [market-regime](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/market-regime): risk-on / choppy / correction / risk-off with suggested exposure
+- [stock-screener](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/stock-screener): plain-English screens compiled to a safe rule language; 14 presets
+- [trade-planner](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/trade-planner): entry, stop, targets, reward-to-risk and size
+- [position-sizer](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/position-sizer): fixed-fractional, futures lots, fractional crypto, Kelly, volatility targeting, risk of ruin
+- [pre-trade-gate](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/pre-trade-gate): hard risk checks; issues the approval the order router requires
+- [backtester](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/backtester): portfolio backtests with no look-ahead, costs, stops, out-of-sample split, HTML report
+- [monte-carlo-sim](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/monte-carlo-sim): probability a target hits before the stop; drawdown and ruin ranges
+- [trade-journal](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/trade-journal): SQLite trade journal with R-multiples, grades and CSV import/export
+- [performance-review](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/performance-review): stats by setup and month plus coaching on common leaks
+- [order-router](https://github.com/reddygopalkrishna/tradingkit-skills/tree/main/skills/order-router): paper (default) or live orders with preview and confirm code, kill switch, audit log
+
+## Brokers and data
+
+- Data: Yahoo Finance (free, default), your own CSV files, Zerodha Kite
+- Brokers: built-in paper broker (default), Zerodha Kite (live, optional)
+
+## Optional
+
+- [Contributing](https://github.com/reddygopalkrishna/tradingkit-skills/blob/main/CONTRIBUTING.md)
+- [Security policy](https://github.com/reddygopalkrishna/tradingkit-skills/blob/main/SECURITY.md)
+- Not financial advice. Educational and research software.
