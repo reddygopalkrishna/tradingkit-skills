@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict, Optional
 
-USER_AGENT = "Mozilla/5.0 (compatible; trading-skills/0.1; +https://github.com/reddygopalkrishna/trading-skills)"
+USER_AGENT = "Mozilla/5.0 (compatible; tradingkit-skills/0.1; +https://github.com/reddygopalkrishna/tradingkit-skills)"
 
 # Well-known OS certificate bundles. Some Python builds (notably the python.org macOS
 # installer before "Install Certificates.command" is run) ship with an empty CA store.

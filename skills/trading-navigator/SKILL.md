@@ -1,16 +1,16 @@
 ---
 name: trading-navigator
-description: Start here for anything trading - routes a goal (find trades, analyse a chart, plan, size, backtest, place orders, review performance) to the right trading-skills, runs the end-to-end idea-to-trade workflow, and produces a daily trading brief combining market regime, risk status, open positions versus stops, a watchlist screen and live chart patterns, designed for scheduled pre-market and end-of-day runs. Use when the user asks "how do I use these trading skills", "what should I do today", for a morning or daily brief, a trading routine, or automation of their trading workflow.
+description: Start here for anything trading - routes a goal (find trades, analyse a chart, plan, size, backtest, place orders, review performance) to the right tradingkit-skills, runs the end-to-end idea-to-trade workflow, and produces a daily trading brief combining market regime, risk status, open positions versus stops, a watchlist screen and live chart patterns, designed for scheduled pre-market and end-of-day runs. Use when the user asks "how do I use these trading skills", "what should I do today", for a morning or daily brief, a trading routine, or automation of their trading workflow.
 license: MIT
 metadata:
   author: reddygopalkrishna
   version: "0.1.0"
-  pack: trading-skills
+  pack: tradingkit-skills
 ---
 
 # Trading Navigator
 
-The front door to the trading-skills pack.
+The front door to the tradingkit-skills pack.
 
 ## Route the request
 
@@ -31,7 +31,7 @@ The front door to the trading-skills pack.
 | "how am I doing", weekly review | performance-review |
 | buy, sell, cancel, positions, kill switch | order-router |
 
-If setup has never been run (`~/.trading-skills/config.json` missing), start with trading-setup.
+If setup has never been run (`~/.tradingkit-skills/config.json` missing), start with trading-setup.
 
 ## Daily brief
 

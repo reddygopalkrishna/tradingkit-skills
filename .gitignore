@@ -5,5 +5,5 @@ dist/
 *.html
 !docs/**/*.html
 .venv/
-.trading-skills/
+.tradingkit-skills/
 *.db

@@ -1,6 +1,6 @@
 """User configuration and paths.
 
-Everything lives under TRADING_SKILLS_HOME (default ~/.trading-skills):
+Everything lives under TRADINGKIT_SKILLS_HOME (default ~/.tradingkit-skills):
     config.json    risk limits, data provider, broker, account settings
     secrets.json   broker credentials (chmod 600) - env vars take precedence
     cache/         downloaded market data
@@ -61,7 +61,7 @@ DEFAULTS: Dict[str, Any] = {
 
 
 def home() -> Path:
-    p = Path(os.environ.get("TRADING_SKILLS_HOME", Path.home() / ".trading-skills")).expanduser()
+    p = Path(os.environ.get("TRADINGKIT_SKILLS_HOME", Path.home() / ".tradingkit-skills")).expanduser()
     p.mkdir(parents=True, exist_ok=True)
     return p
 

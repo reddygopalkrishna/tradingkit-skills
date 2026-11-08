@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping make trading-skills better.
+Thanks for helping make tradingkit-skills better.
 
 ## Ground rules
 

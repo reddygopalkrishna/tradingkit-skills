@@ -5,7 +5,7 @@ license: MIT
 metadata:
   author: reddygopalkrishna
   version: "0.1.0"
-  pack: trading-skills
+  pack: tradingkit-skills
 ---
 
 # Market Data
@@ -47,7 +47,7 @@ If a symbol fails, suggest the likely Yahoo spelling (exchange suffix) and retry
 
 Switch with `trading-setup`: `setup.py set data.provider csv`. Override per call with `--provider`.
 
-Cache: `~/.trading-skills/cache/`, TTL `data.cache_ttl_minutes` (60). Use `--no-cache` for fresh prices.
+Cache: `~/.tradingkit-skills/cache/`, TTL `data.cache_ttl_minutes` (60). Use `--no-cache` for fresh prices.
 
 ## Guardrails
 

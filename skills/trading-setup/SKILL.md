@@ -1,17 +1,17 @@
 ---
 name: trading-setup
-description: Configure the trading-skills toolkit - account size, currency, benchmark index, risk limits, data provider (free Yahoo, CSV, or broker), broker (paper or Zerodha Kite), credentials and the live-trading switch. Use when the user is getting started, says "set up trading", wants to change risk per trade or limits, connect a broker, log in to Kite, reset the paper account, or when another trading skill reports missing config.
+description: Configure the tradingkit-skills toolkit - account size, currency, benchmark index, risk limits, data provider (free Yahoo, CSV, or broker), broker (paper or Zerodha Kite), credentials and the live-trading switch. Use when the user is getting started, says "set up trading", wants to change risk per trade or limits, connect a broker, log in to Kite, reset the paper account, or when another trading skill reports missing config.
 license: MIT
 metadata:
   author: reddygopalkrishna
   version: "0.1.0"
-  pack: trading-skills
+  pack: tradingkit-skills
 ---
 
 # Trading Setup
 
 One-time (and occasional) configuration for every skill in the pack. All state lives in
-`~/.trading-skills/` (override with `TRADING_SKILLS_HOME`). Works with zero API keys:
+`~/.tradingkit-skills/` (override with `TRADINGKIT_SKILLS_HOME`). Works with zero API keys:
 free Yahoo data + the built-in paper broker.
 
 Run commands from this skill's directory. Python 3.9+, standard library only.

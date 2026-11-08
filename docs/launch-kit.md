@@ -26,7 +26,7 @@ skills.sh ranks by install telemetry from `npx skills add`, so every README and 
 
 ## X thread draft
 
-1/ I open-sourced **trading-skills**: 15 skills that turn Claude Code, Codex, Cursor or Gemini CLI into a disciplined trading co-pilot. Any market. Any broker. Zero API keys to start. [GIF]
+1/ I open-sourced **tradingkit-skills**: 15 skills that turn Claude Code, Codex, Cursor or Gemini CLI into a disciplined trading co-pilot. Any market. Any broker. Zero API keys to start. [GIF]
 
 2/ Most AI trading tools let the model "estimate" numbers. Here every indicator, pattern, size and backtest is deterministic Python - tested, reproducible, zero dependencies.
 
@@ -37,8 +37,8 @@ skills.sh ranks by install telemetry from `npx skills add`, so every README and 
 5/ Also: a backtester with no look-ahead and honest caveats, Monte Carlo odds for any setup, a journal and performance coaching ("you hold losers 2x longer than winners").
 
 6/ Free data out of the box, works on global stocks, ETFs, indices, FX, futures and crypto. Install:
-`npx skills add reddygopalkrishna/trading-skills`
-github.com/reddygopalkrishna/trading-skills - stars and PRs welcome. Not financial advice.
+`npx skills add reddygopalkrishna/tradingkit-skills`
+github.com/reddygopalkrishna/tradingkit-skills - stars and PRs welcome. Not financial advice.
 
 ## Show HN text
 

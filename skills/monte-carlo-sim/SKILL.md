@@ -5,7 +5,7 @@ license: MIT
 metadata:
   author: reddygopalkrishna
   version: "0.1.0"
-  pack: trading-skills
+  pack: tradingkit-skills
 ---
 
 # Monte Carlo Sim

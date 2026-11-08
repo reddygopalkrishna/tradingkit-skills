@@ -24,6 +24,6 @@ jobs:
         with:
           files: |
             dist/*.skill
-            dist/trading-skills-all.zip
+            dist/tradingkit-skills-all.zip
             dist/SHA256SUMS
           generate_release_notes: true

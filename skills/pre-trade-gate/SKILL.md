@@ -5,7 +5,7 @@ license: MIT
 metadata:
   author: reddygopalkrishna
   version: "0.1.0"
-  pack: trading-skills
+  pack: tradingkit-skills
 ---
 
 # Pre-Trade Gate
@@ -26,7 +26,7 @@ Exit code 0 = PASS / PASS_WITH_WARNINGS (approval issued), 3 = FAIL.
 
 | check | rule (config key) |
 |---|---|
-| kill_switch_off | `~/.trading-skills/KILL_SWITCH` absent |
+| kill_switch_off | `~/.tradingkit-skills/KILL_SWITCH` absent |
 | stop_defined | stop below entry (long) / above (short) |
 | risk_per_trade | risk <= `risk_per_trade_pct` |
 | reward_risk | (target-entry)/(entry-stop) >= `min_reward_risk` (warn if no target) |

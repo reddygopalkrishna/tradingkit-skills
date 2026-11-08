@@ -1,5 +1,5 @@
 {
-  "name": "trading-skills",
+  "name": "tradingkit-skills",
   "owner": {
     "name": "reddygopalkrishna",
     "url": "https://github.com/reddygopalkrishna"
@@ -10,7 +10,7 @@
   },
   "plugins": [
     {
-      "name": "trading-skills",
+      "name": "tradingkit-skills",
       "description": "15 trading skills that work on any market: technical analysis, chart patterns, market regime, screener, trade planner, position sizer, pre-trade risk gate, backtester, Monte Carlo, journal, performance review, paper/live order router. Zero API keys by default.",
       "version": "0.1.0",
       "source": "./",
@@ -18,8 +18,8 @@
       "author": {
         "name": "reddygopalkrishna"
       },
-      "homepage": "https://github.com/reddygopalkrishna/trading-skills",
-      "repository": "https://github.com/reddygopalkrishna/trading-skills",
+      "homepage": "https://github.com/reddygopalkrishna/tradingkit-skills",
+      "repository": "https://github.com/reddygopalkrishna/tradingkit-skills",
       "license": "MIT",
       "keywords": [
         "trading",

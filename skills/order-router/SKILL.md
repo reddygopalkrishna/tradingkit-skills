@@ -5,7 +5,7 @@ license: MIT
 metadata:
   author: reddygopalkrishna
   version: "0.1.0"
-  pack: trading-skills
+  pack: tradingkit-skills
 ---
 
 # Order Router
@@ -36,7 +36,7 @@ python3 scripts/router.py preview --protect --symbol NSE:INFY --qty 10 --stop-pr
 
 - **Never** run `submit` without the user's explicit confirmation of the previewed order in this
   conversation. A request like "buy it" before the preview is not confirmation of the preview.
-- Never invent, reuse or guess a confirm code; never edit files in `~/.trading-skills/pending/` or `approvals/`.
+- Never invent, reuse or guess a confirm code; never edit files in `~/.tradingkit-skills/pending/` or `approvals/`.
 - Never turn the kill switch off unless the user asks. If it is on, explain and stop.
 - Live trading requires `broker.live_trading_enabled` (set only through `trading-setup live on`).
   If the user wants live trading, first confirm they have paper-traded the strategy.
@@ -47,7 +47,7 @@ python3 scripts/router.py preview --protect --symbol NSE:INFY --qty 10 --stop-pr
 
 ## Paper broker
 
-Simulated account in `~/.trading-skills/paper/` (starting cash = `account.equity`). Market orders
+Simulated account in `~/.tradingkit-skills/paper/` (starting cash = `account.equity`). Market orders
 fill at the latest price +/- slippage; limit/stop orders rest until `process` sees a bar trade through;
 `--stop-loss/--take-profit` become an OCO exit pair after the entry fills. Commissions and slippage
 come from config `costs`. Run `process` daily (or schedule it) to fill resting orders and auto-close
@@ -58,4 +58,4 @@ journal trades when stops/targets hit. Reset with `trading-setup paper-reset`.
 Symbols `EXCHANGE:SYMBOL`; product from `--product` or `broker.default_product` (CNC/MIS/NRML).
 Entry orders do not carry the stop: after the fill, place a protective GTT (`preview --protect`)
 or a stop order. Check your broker's API rules (static IP registration, algo IDs, market-order
-restrictions) before going live. Every action is logged to `~/.trading-skills/audit.log`.
+restrictions) before going live. Every action is logged to `~/.tradingkit-skills/audit.log`.

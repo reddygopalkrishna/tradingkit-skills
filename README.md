@@ -1,6 +1,6 @@
 <div align="center">
 
-# trading-skills
+# tradingkit-skills
 
 **Trading skills for AI agents. Any market. Any broker. Zero API keys to start.**
 
@@ -8,7 +8,7 @@ Turn Claude, Codex, Cursor or Gemini CLI into a disciplined trading co-pilot: an
 plan trades with exact stops and sizes, enforce your risk rules, backtest ideas, simulate outcomes,
 journal everything and route orders - paper by default, live with confirmation.
 
-[![CI](https://github.com/reddygopalkrishna/trading-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/reddygopalkrishna/trading-skills/actions/workflows/ci.yml)
+[![CI](https://github.com/reddygopalkrishna/tradingkit-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/reddygopalkrishna/tradingkit-skills/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Skills](https://img.shields.io/badge/skills-15-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%2B-informational)
@@ -32,7 +32,7 @@ Agent:  [chart-patterns] 3 live setups. NVDA bull flag scores 84 (pivot 131.20, 
 
 ## Why this pack
 
-| | typical trading skill packs | **trading-skills** |
+| | typical trading skill packs | **tradingkit-skills** |
 |---|---|---|
 | Markets | one country / one asset class | **any**: global stocks, ETFs, indices, FX, futures, crypto |
 | Data | paid API key required | **free by default** (Yahoo), or your CSVs, or your broker |
@@ -67,22 +67,22 @@ Agent:  [chart-patterns] 3 live setups. NVDA bull flag scores 84 (pivot 131.20, 
 
 **Claude Code (plugin marketplace)**
 ```bash
-/plugin marketplace add reddygopalkrishna/trading-skills
-/plugin install trading-skills@trading-skills
+/plugin marketplace add reddygopalkrishna/tradingkit-skills
+/plugin install tradingkit-skills@tradingkit-skills
 ```
 
 **Any agent via [skills.sh](https://skills.sh)** (Claude Code, Codex, Cursor, Gemini CLI, and more)
 ```bash
-npx skills add reddygopalkrishna/trading-skills
+npx skills add reddygopalkrishna/tradingkit-skills
 ```
 
-**claude.ai / Claude desktop** - download `.skill` files from the [latest release](https://github.com/reddygopalkrishna/trading-skills/releases),
+**claude.ai / Claude desktop** - download `.skill` files from the [latest release](https://github.com/reddygopalkrishna/tradingkit-skills/releases),
 then upload under *Customize -> Skills* (code execution must be enabled).
 
 **Manual**
 ```bash
-git clone https://github.com/reddygopalkrishna/trading-skills
-cp -r trading-skills/skills/* ~/.claude/skills/        # or ~/.codex/skills, ~/.cursor/skills, ~/.gemini/skills
+git clone https://github.com/reddygopalkrishna/tradingkit-skills
+cp -r tradingkit-skills/skills/* ~/.claude/skills/        # or ~/.codex/skills, ~/.cursor/skills, ~/.gemini/skills
 ```
 
 Requires Python 3.9+. Nothing to `pip install`.
@@ -101,7 +101,7 @@ python3 scripts/setup.py init --equity 50000 --currency USD --benchmark SPY  # y
 Then talk to your agent:
 
 ```text
-"Set up trading-skills: 50,000 USD account, benchmark SPY, risk 1% per trade."
+"Set up tradingkit-skills: 50,000 USD account, benchmark SPY, risk 1% per trade."
 "How's the market?"                          "Analyze AAPL - daily and weekly."
 "Find stocks in my watchlist near 52-week highs on rising volume."
 "Is NVDA forming a VCP or a flag?"           "Plan a long in MSFT with a 2 ATR stop."
@@ -167,7 +167,7 @@ flowchart LR
 - **No approval, no order.** The router refuses opening orders without a fresh gate PASS for that exact symbol/side/qty/stop.
 - **Human in the loop.** Every submission needs a single-use confirm code shown in a preview.
 - **Kill switch** halts all submissions; `--flatten` closes paper positions and cancels live orders.
-- **Audit log** of every preview, submit, cancel and gate decision in `~/.trading-skills/audit.log`.
+- **Audit log** of every preview, submit, cancel and gate decision in `~/.tradingkit-skills/audit.log`.
 - **Your limits, enforced:** risk per trade, position size, portfolio heat, max positions, daily loss, losing streak, drawdown, minimum R:R.
 
 Automation-friendly by design: schedule the brief, scans, paper fill processing and weekly reviews.
@@ -187,7 +187,7 @@ core/tradekit/                    zero-dependency engine shared by all skills
   backtest.py   portfolio backtester                      montecarlo.py  simulations
   gate.py       risk gate + approvals + audit             journal.py     SQLite journal
   brokers/      paper.py, kite.py (Broker interface)      report.py      HTML/SVG reports
-~/.trading-skills/                config, secrets (chmod 600), cache, journal, paper account, audit log
+~/.tradingkit-skills/                config, secrets (chmod 600), cache, journal, paper account, audit log
 ```
 
 Each skill works installed on its own; `tools/sync_core.py` vendors the core into every skill and CI fails if a copy drifts.

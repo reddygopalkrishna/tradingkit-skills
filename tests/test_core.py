@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "core"))
 sys.path.insert(0, str(ROOT / "tests"))
 
 _home = tempfile.mkdtemp(prefix="tskills-test-")
-os.environ["TRADING_SKILLS_HOME"] = _home
+os.environ["TRADINGKIT_SKILLS_HOME"] = _home
 
 from synth import from_closes, gbm  # noqa: E402
 from tradekit import analysis, backtest, config, expr, gate, indicators as ind, metrics, montecarlo, patterns, risk  # noqa: E402
@@ -393,13 +393,13 @@ class TestJournalGate(unittest.TestCase):
 
 class TestPaperBroker(unittest.TestCase):
     def setUp(self):
-        os.environ["TRADING_SKILLS_HOME"] = tempfile.mkdtemp()
+        os.environ["TRADINGKIT_SKILLS_HOME"] = tempfile.mkdtemp()
         self.price = {"AAA": 100.0}
         self.bar = {"AAA": {"open": 100, "high": 101, "low": 99, "close": 100, "date": "2024-01-02"}}
         self.b = PaperBroker(price_fn=lambda s: self.price[s], bar_fn=lambda s: self.bar[s], starting_cash=10000)
 
     def tearDown(self):
-        os.environ["TRADING_SKILLS_HOME"] = _home
+        os.environ["TRADINGKIT_SKILLS_HOME"] = _home
 
     def test_market_fill_and_costs(self):
         r = self.b.place({"symbol": "AAA", "side": "buy", "qty": 10, "type": "market"})

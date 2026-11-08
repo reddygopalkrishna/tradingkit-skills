@@ -21,7 +21,7 @@ class SkillCLI(unittest.TestCase):
         cls.data = tempfile.mkdtemp(prefix="tskills-data-")
         for i, s in enumerate(["AAA", "BBB", "CCC", "DDD", "IDX"]):
             gbm(s, n=900, seed=i + 11, drift=0.0004 + 0.0002 * i).to_csv(Path(cls.data) / f"{s}.csv")
-        cls.env = dict(os.environ, TRADING_SKILLS_HOME=cls.home, PYTHONDONTWRITEBYTECODE="1")
+        cls.env = dict(os.environ, TRADINGKIT_SKILLS_HOME=cls.home, PYTHONDONTWRITEBYTECODE="1")
         cls.run_ok("trading-setup/scripts/setup.py", "init", "--equity", "100000", "--currency", "USD",
                    "--benchmark", "IDX", "--provider", "csv", "--csv-dir", cls.data)
 

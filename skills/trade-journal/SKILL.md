@@ -5,12 +5,12 @@ license: MIT
 metadata:
   author: reddygopalkrishna
   version: "0.1.0"
-  pack: trading-skills
+  pack: tradingkit-skills
 ---
 
 # Trade Journal
 
-The memory of the trading system. SQLite at `~/.trading-skills/journal.db`.
+The memory of the trading system. SQLite at `~/.tradingkit-skills/journal.db`.
 order-router writes to it automatically; this skill is for everything manual.
 
 ```bash

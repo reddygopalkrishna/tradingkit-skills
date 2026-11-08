@@ -44,7 +44,7 @@ Safe to schedule (read-only or paper):
 - screener / pattern scans on a watchlist, saving hits to a file
 
 Scheduling options: the agent's own scheduled tasks, or system cron, e.g.
-`35 21 * * 1-5 cd ~/trading-skills/skills/trading-navigator && python3 scripts/brief.py --watchlist ~/watchlist.txt --report ~/brief.html`
+`35 21 * * 1-5 cd ~/tradingkit-skills/skills/trading-navigator && python3 scripts/brief.py --watchlist ~/watchlist.txt --report ~/brief.html`
 
 Never fully automate live order submission with these skills. The confirm step is a deliberate
 human check. Fully automated live trading generally needs your own broker app with the controls

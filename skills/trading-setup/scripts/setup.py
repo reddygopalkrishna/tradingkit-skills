@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Configure trading-skills: account, risk limits, data provider, broker, credentials.
+"""Configure tradingkit-skills: account, risk limits, data provider, broker, credentials.
 
 Examples
   python3 scripts/setup.py init --equity 500000 --currency USD --benchmark SPY
@@ -64,7 +64,7 @@ def cmd_show(a):
         print(cli.dump(out))
         return
     acc, risk, data, br = cfg["account"], cfg["risk"], cfg["data"], cfg["broker"]
-    print(f"## trading-skills config  (v{__version__})\n")
+    print(f"## tradingkit-skills config  (v{__version__})\n")
     print(f"Home: `{out['home']}`")
     print(f"- Account: equity {acc['equity']:,.2f} {acc['currency']}, benchmark {acc['benchmark'] or '(not set)'}, tz {acc['timezone']}")
     print(f"- Data: {data['provider']}" + (f" ({data['csv_dir']})" if data.get('csv_dir') else ""))

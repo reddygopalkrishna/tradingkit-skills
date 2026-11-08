@@ -1,4 +1,4 @@
-"""tradekit - zero-dependency trading toolkit shared by every skill in trading-skills.
+"""tradekit - zero-dependency trading toolkit shared by every skill in tradingkit-skills.
 
 Pure Python standard library (3.9+). No pip install required.
 Source of truth lives in core/tradekit; each skill ships a vendored copy in

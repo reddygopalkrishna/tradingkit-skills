@@ -1,4 +1,4 @@
-# trading-skills usage guide
+# tradingkit-skills usage guide
 
 This guide takes you from install to your first paper trade, then covers every skill in detail.
 You can use the pack two ways:
@@ -40,20 +40,20 @@ python3 --version
 **Claude Code (plugin marketplace)**
 
 ```text
-/plugin marketplace add reddygopalkrishna/trading-skills
-/plugin install trading-skills@trading-skills
+/plugin marketplace add reddygopalkrishna/tradingkit-skills
+/plugin install tradingkit-skills@tradingkit-skills
 ```
 
 **Any agent via skills.sh** (Claude Code, Codex, Cursor, Gemini CLI and others)
 
 ```bash
-npx skills add reddygopalkrishna/trading-skills
+npx skills add reddygopalkrishna/tradingkit-skills
 ```
 
 **claude.ai / Claude desktop app**
 
-1. Download the `.skill` files (or `trading-skills-all.zip`) from the
-   [latest release](https://github.com/reddygopalkrishna/trading-skills/releases).
+1. Download the `.skill` files (or `tradingkit-skills-all.zip`) from the
+   [latest release](https://github.com/reddygopalkrishna/tradingkit-skills/releases).
 2. Open *Settings -> Capabilities* and make sure code execution is on.
 3. Upload each `.skill` under *Customize -> Skills*. Start with `trading-navigator`, `trading-setup`,
    `market-data` and `technical-analysis`, then add the rest.
@@ -61,8 +61,8 @@ npx skills add reddygopalkrishna/trading-skills
 **Manual (any agent that reads a skills folder)**
 
 ```bash
-git clone https://github.com/reddygopalkrishna/trading-skills
-cp -r trading-skills/skills/* ~/.claude/skills/     # or ~/.codex/skills, ~/.cursor/skills, ~/.gemini/skills
+git clone https://github.com/reddygopalkrishna/tradingkit-skills
+cp -r tradingkit-skills/skills/* ~/.claude/skills/     # or ~/.codex/skills, ~/.cursor/skills, ~/.gemini/skills
 ```
 
 Each skill folder is self-contained (it carries its own copy of the shared engine), so you can install
@@ -93,7 +93,7 @@ python3 scripts/setup.py init --equity 20000 --currency GBP --benchmark ^FTSE   
 python3 scripts/setup.py init --equity 10000 --currency USD --benchmark BTC-USD   # crypto
 ```
 
-Or just say to your agent: *"Set up trading-skills: 50,000 USD account, benchmark SPY, risk 1% per trade."*
+Or just say to your agent: *"Set up tradingkit-skills: 50,000 USD account, benchmark SPY, risk 1% per trade."*
 
 ### Step 3 - look at the market and a chart
 
@@ -178,7 +178,7 @@ Defaults (change any of them):
 | `data.provider` | yahoo | `yahoo`, `csv` or `kite` |
 | `broker.name` | paper | `paper` or `kite` |
 
-Settings live in `~/.trading-skills/config.json`. Set `TRADING_SKILLS_HOME` to keep separate
+Settings live in `~/.tradingkit-skills/config.json`. Set `TRADINGKIT_SKILLS_HOME` to keep separate
 setups (for example one per account).
 
 ---
@@ -424,7 +424,7 @@ data need the paid *Connect* plan; without it, keep `data.provider` set to `yaho
 registered static IP or algorithm identifiers). These are your responsibility.
 
 1. Create an app at the Kite developer console and note the API key and secret.
-2. Save the credentials (stored in `~/.trading-skills/secrets.json` with permissions 600; environment
+2. Save the credentials (stored in `~/.tradingkit-skills/secrets.json` with permissions 600; environment
    variables `KITE_API_KEY`, `KITE_API_SECRET`, `KITE_ACCESS_TOKEN` take precedence):
 
    ```bash
@@ -510,7 +510,7 @@ weekly routines.
 
 ## 10. Files and where things live
 
-Everything is under `~/.trading-skills/` (or `TRADING_SKILLS_HOME`):
+Everything is under `~/.tradingkit-skills/` (or `TRADINGKIT_SKILLS_HOME`):
 
 | path | contents |
 |---|---|
