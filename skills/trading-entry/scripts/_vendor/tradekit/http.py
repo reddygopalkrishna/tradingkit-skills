@@ -54,7 +54,8 @@ class HTTPError(RuntimeError):
 
 def request(method: str, url: str, params: Optional[Dict[str, Any]] = None,
             data: Optional[Dict[str, Any]] = None, headers: Optional[Dict[str, str]] = None,
-            timeout: float = 20.0, retries: int = 2, backoff: float = 1.5) -> bytes:
+            timeout: float = 20.0, retries: int = 2, backoff: float = 1.5,
+            json_body: Optional[Any] = None) -> bytes:
     if params:
         clean = {k: v for k, v in params.items() if v is not None}
         url = url + ("&" if "?" in url else "?") + urllib.parse.urlencode(clean, doseq=True)
@@ -62,7 +63,10 @@ def request(method: str, url: str, params: Optional[Dict[str, Any]] = None,
     hdrs = {"User-Agent": USER_AGENT, "Accept": "application/json, text/csv, */*"}
     if headers:
         hdrs.update(headers)
-    if data is not None:
+    if json_body is not None:
+        body = json.dumps(json_body).encode()
+        hdrs.setdefault("Content-Type", "application/json")
+    elif data is not None:
         body = urllib.parse.urlencode({k: v for k, v in data.items() if v is not None}).encode()
         hdrs.setdefault("Content-Type", "application/x-www-form-urlencoded")
     last_err: Optional[Exception] = None

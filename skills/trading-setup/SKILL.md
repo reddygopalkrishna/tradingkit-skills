@@ -40,6 +40,10 @@ Exchange suffixes follow Yahoo: `.L` London, `.TO` Toronto, `.NS` NSE, `.BO` BSE
 | `paper-reset [--cash N]` | wipe the paper account |
 | `kite-login --api-key K --api-secret S` | save Kite credentials, print the login URL |
 | `kite-session --request-token T` | exchange the token for a daily access token |
+| `fyers-login --app-id --secret --redirect-uri` / `fyers-session --auth-code` | Fyers login (daily) |
+| `upstox-login --api-key --api-secret --redirect-uri` / `upstox-session --code` | Upstox login (daily) |
+| `dhan-login --client-id --access-token` | save Dhan token (24 h) |
+| `groww-login --access-token` (or `--api-key --api-secret`) | save Groww token (daily) |
 | `live on --i-understand-the-risks` / `live off` | enable/disable real orders |
 
 ## Risk keys (config `risk.*`)
@@ -51,7 +55,7 @@ These are enforced by **trading-risk**; change them only when the user explicitl
 ## Connecting a live broker (optional)
 
 Live brokers plug in through adapters in `core/tradekit/brokers/`; the paper broker needs nothing.
-Adapters available now: **Zerodha Kite** (below). If the user's broker has no adapter yet, everything
+Adapters available now: **Zerodha Kite** (below) and beta adapters for **Fyers, Upstox, Dhan, Groww** (login steps in docs/USAGE.md section 7; Angel One is not supported). If the user's broker has no adapter yet, everything
 except automatic order placement still works: they place the planned order in their broker's app.
 
 ### Zerodha Kite

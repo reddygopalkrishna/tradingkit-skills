@@ -58,6 +58,8 @@ journal trades when stops/targets hit. Reset with `trading-setup paper-reset`.
 Live orders go through a broker adapter (`core/tradekit/brokers/`); `trading-setup` lists the ones
 available and how to connect. The flow, gate and confirm step are identical for every broker.
 
+**Fyers, Upstox, Dhan, Groww adapters (beta):** symbol formats differ (Fyers `NSE:SBIN-EQ`, Upstox `NSE_EQ|INE...`, Dhan `NSE_EQ:11536`, Groww `NSE:RELIANCE`); products `CNC`/`MIS`/`NRML` map to each broker's names. Entry orders do not carry the stop - place a stop order after the fill. Upstox refuses market orders. See docs/USAGE.md section 7.
+
 **Zerodha Kite adapter:** symbols `EXCHANGE:SYMBOL`; product from `--product` or `broker.default_product` (CNC/MIS/NRML).
 Entry orders do not carry the stop: after the fill, place a protective GTT (`preview --protect`)
 or a stop order. Check your broker's API rules (static IP registration, algo IDs, market-order

@@ -27,6 +27,7 @@ The front door to the trading-skills pack.
 | "can I take this trade", risk dashboard | trading-risk |
 | test a strategy on history | trading-backtest |
 | odds of a setup, drawdown ranges | trading-odds |
+| option chain, Greeks, implied volatility, PCR, max pain, option strategy payoff | trading-fno |
 | log / annotate trades | trading-journal |
 | "how am I doing", weekly review | trading-review |
 | buy, sell, cancel, positions, kill switch | trading-broker |

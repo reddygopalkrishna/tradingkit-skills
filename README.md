@@ -54,14 +54,14 @@ ET, 357.69), `SHEL.L` in London or `BTC-USD`.
 |---|---|---|
 | Markets | one country / one asset class | **any**: global stocks, ETFs, indices, FX, futures, crypto |
 | Data | paid API key required | **free by default** (Yahoo), or your CSVs, or your broker |
-| Broker | one, or none | **paper broker built in** + a small adapter interface for your live broker |
+| Broker | one, or none | **paper broker built in** + live adapters for Zerodha Kite, Fyers, Upstox, Dhan and Groww (one small interface) |
 | Math | the model "estimates" | **deterministic Python**: every number is computed, tested and reproducible |
 | Risk | advice in prose | **hard gate**: no stop, too big, over-heated, daily loss hit -> order is blocked |
 | Orders | fire-and-forget | **preview -> human confirm code -> submit**, kill switch, audit log |
 | Install | pip/npm dependencies | **zero dependencies**, Python standard library only |
 | Portability | one agent | open [Agent Skills](https://agentskills.io) format: Claude Code, claude.ai, Codex, Cursor, Gemini CLI |
 
-## The 20 skills
+## The 21 skills
 
 | stage | skill | what it does |
 |---|---|---|
@@ -77,6 +77,7 @@ ET, 357.69), `SHEL.L` in London or `BTC-USD`.
 | | 🕵️ [trading-insiders](skills/trading-insiders) | **New.** US Congress trades (Pelosi tracker, read from the PDFs), SEC Form 4, India NSE bulk/block deals and SEBI insider trades |
 | time | ⏱️ [trading-entry](skills/trading-entry) | **New.** Bar-by-bar entry timer: opening-range or level breaks, long or short, volume check, any exchange's session, replays |
 | plan | 🗺️ [trading-plan](skills/trading-plan) | Entry, stop options, targets, R:R, invalidation and size; futures multipliers, fractional crypto, regime scaling |
+| | 🧮 [trading-fno](skills/trading-fno) | **New.** F&O analysis: option Greeks, implied volatility, multi-leg payoff (spreads, straddles, iron condor), chain OI / PCR / max pain. US live (Cboe, delayed); India from the NSE chain CSV you download or Kite. Analysis only |
 | | 🎲 [trading-odds](skills/trading-odds) | Odds a setup hits target before stop; drawdown and ruin ranges from your trade history |
 | | ⚖️ [trading-size](skills/trading-size) | Fixed-fractional, lots and margin, size tables, Kelly, volatility targeting, risk of ruin |
 | protect | 🛡️ [trading-risk](skills/trading-risk) | 12 hard checks against your limits; issues the approval the broker step requires; live risk dashboard |
@@ -162,7 +163,7 @@ interest, strategies) is on the roadmap - it is not in this release.
 
 | piece | cost |
 |---|---|
-| All 20 skills | **free** (MIT) |
+| All 21 skills | **free** (MIT) |
 | Market data (Yahoo Finance, default) | **free**, no key - unofficial endpoint, may be delayed or rate-limited |
 | Your own CSV data | free |
 | Paper trading | **free** - built-in simulated broker |
@@ -223,7 +224,7 @@ Each skill works installed on its own; `tools/sync_core.py` vendors the core int
 ## FAQ
 
 **Is there a free trading skill pack for Claude Code, Codex, Cursor or Gemini CLI?**
-Yes. trading-skills is free and MIT licensed, with 20 skills in the open Agent Skills format. Install with
+Yes. trading-skills is free and MIT licensed, with 21 skills in the open Agent Skills format. Install with
 `npx skills add reddygopalkrishna/trading-skills`.
 
 **Does it need an API key or a paid data subscription?**
@@ -232,8 +233,9 @@ live orders.
 
 **Which markets and brokers does it support?**
 Any market Yahoo covers (US, India, UK, Europe, Japan, Hong Kong, Canada, Australia and more), plus forex, crypto,
-indices and futures, or your own CSV data. Brokers: the built-in paper broker plus live-broker adapters behind one small interface; see the usage guide
-for the adapters available today.
+indices and futures, or your own CSV data. Brokers: the built-in paper broker, plus live adapters for the Indian brokers with an official API - Zerodha Kite,
+Fyers, Upstox, Dhan and Groww (all but Kite are beta: written against the official docs, tested offline, not yet
+run against live accounts). Angel One is not supported yet. See [the usage guide](docs/USAGE.md#7-live-trading-through-a-broker).
 
 **Can an AI agent place trades on its own with this?**
 Not live trades. Every opening order needs a passing pre-trade risk gate and a one-time confirm code that you
@@ -262,11 +264,11 @@ More in the [usage guide FAQ](docs/USAGE.md#12-faq).
 
 ## Roadmap
 
-**v0.2.0** (this release): 20 skills - adds news, earnings, insider and Congress trades, the entry timer and alerts,
+**v0.2.0** (this release): 20 skills (21 with `trading-fno`, unreleased) - adds news, earnings, insider and Congress trades, the entry timer and alerts,
 and the `trading-` skill names. Next (contributions welcome):
 
-- **F&O (India and US):** option chains, Greeks, open interest and PCR, payoff diagrams and strategy builder
-- **Brokers & data:** more live-broker adapters (US, India, crypto exchanges) and live tick feeds
+- **F&O:** `trading-fno` covers option chains, Greeks, OI / PCR / max pain and payoff. Still to do: a live NSE chain feed (nseindia.com blocks programs), futures basis and roll, order legs for multi-leg strategies
+- **Brokers & data:** Angel One, US and crypto-exchange adapters, live-verifying the beta adapters, and live tick feeds
 - **Alerts out:** Telegram, email and webhook delivery
 - **Research:** walk-forward optimizer, robustness heatmaps, overfitting checks, forward paper-trading runner
 - **Portfolio:** correlation and VaR, sector rotation, rebalancer
