@@ -1,12 +1,17 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 - 2026-11-14
+
+21 skills. F&O analysis and four more Indian brokers.
 
 - **New skill `trading-fno`:** F&O analysis for India and US. Black-Scholes price and Greeks, implied volatility
   (bisection), multi-leg payoff with breakevens and max profit/loss (named strategies or custom legs, ASCII
   chart), and option-chain OI / PCR / max pain / ATM straddle. Chain sources: Cboe delayed JSON for US tickers,
   a user-downloaded NSE option-chain CSV (read by header name), Kite instruments + quotes. Analysis only.
   Core: new `tradekit.options`. 29 tests, offline.
+- **Indian broker adapters (beta):** Fyers, Upstox, Dhan and Groww next to Zerodha Kite, behind the same
+  preview -> confirm -> submit flow and risk-gate approval. Paper stays the default.
+- **README:** real RELIANCE.NS screenshot (13 Nov 2026 close) at the top; skills badge 21.
 
 ## 0.2.0 - 2026-11-14
 

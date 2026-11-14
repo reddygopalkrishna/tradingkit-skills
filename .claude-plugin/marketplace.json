@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "21 trading skills for AI agents that work in any market (US, India NSE/BSE, UK, Europe, Asia, crypto, forex): news, earnings, insider and Congress trades, scanner, chart patterns, entry timer, trade planner, F&O option chains and Greeks, odds, risk gate, alerts, backtesting, journal, review, paper and live orders.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
       "name": "trading-skills",
       "description": "21 trading skills for any market: scan, read the news and earnings, track insider and Congress trades, time the entry, plan the stop and size, check the odds, pass the risk gate, then preview and confirm every order. Paper trading by default, zero API keys.",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "source": "./",
       "strict": false,
       "author": {
