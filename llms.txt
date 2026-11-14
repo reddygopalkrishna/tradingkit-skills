@@ -1,7 +1,7 @@
 # trading-skills
 
 > Free, open-source (MIT) trading skills for AI agents - Claude Code, claude.ai, Codex, Cursor and Gemini CLI.
-> 20 skills. Works on any market (US, India NSE/BSE, UK, Europe, Asia, ETFs, indices, forex, futures, crypto) and any broker. No API keys needed to
+> 21 skills. Works on any market (US, India NSE/BSE, UK, Europe, Asia, ETFs, indices, forex, futures, crypto) and any broker. No API keys needed to
 > start: free Yahoo Finance data and a built-in paper-trading broker. Every number is computed by tested,
 > zero-dependency Python (standard library only), never estimated by the model. Orders go through a hard
 > pre-trade risk gate and a human-confirmed preview before submission.
@@ -31,6 +31,7 @@ Install:
 - [trading-size](https://github.com/reddygopalkrishna/trading-skills/tree/main/skills/trading-size): fixed-fractional, futures lots, fractional crypto, Kelly, volatility targeting, risk of ruin
 - [trading-risk](https://github.com/reddygopalkrishna/trading-skills/tree/main/skills/trading-risk): hard risk checks; issues the approval trading-broker requires
 - [trading-backtest](https://github.com/reddygopalkrishna/trading-skills/tree/main/skills/trading-backtest): portfolio backtests with no look-ahead, costs, stops, out-of-sample split, HTML report
+- [trading-fno](https://github.com/reddygopalkrishna/trading-skills/tree/main/skills/trading-fno): F&O analysis, option Greeks and implied volatility, multi-leg payoff, option-chain OI / PCR / max pain; US via Cboe delayed data, India from an NSE chain CSV or Kite; analysis only
 - [trading-odds](https://github.com/reddygopalkrishna/trading-skills/tree/main/skills/trading-odds): probability a target hits before the stop; drawdown and ruin ranges
 - [trading-journal](https://github.com/reddygopalkrishna/trading-skills/tree/main/skills/trading-journal): SQLite trade journal with R-multiples, grades and CSV import/export
 - [trading-review](https://github.com/reddygopalkrishna/trading-skills/tree/main/skills/trading-review): stats by setup and month plus coaching on common leaks

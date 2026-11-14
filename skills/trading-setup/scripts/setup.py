@@ -8,6 +8,10 @@ Examples
   python3 scripts/setup.py doctor --symbol AAPL
   python3 scripts/setup.py kite-login --api-key XXXX --api-secret YYYY
   python3 scripts/setup.py kite-session --request-token ZZZZ
+  python3 scripts/setup.py fyers-login --app-id ID --secret S --redirect-uri URL   then   fyers-session --auth-code C
+  python3 scripts/setup.py upstox-login --api-key K --api-secret S --redirect-uri URL   then   upstox-session --code C
+  python3 scripts/setup.py dhan-login --client-id ID --access-token T
+  python3 scripts/setup.py groww-login --access-token T     (or --api-key K --api-secret S to mint one)
   python3 scripts/setup.py paper-reset --cash 100000
   python3 scripts/setup.py live on --i-understand-the-risks
 """
@@ -171,6 +175,83 @@ def cmd_kite_session(a):
           "Tokens expire daily - repeat kite-login each trading day.")
 
 
+def _save(**kv):
+    s = config.load_secrets()
+    s.update({k: v for k, v in kv.items() if v})
+    config.save_secrets(s)
+    return s
+
+
+def cmd_fyers_login(a):
+    s = _save(fyers_app_id=a.app_id, fyers_secret=a.secret, fyers_redirect_uri=a.redirect_uri)
+    from tradekit.brokers.fyers import FyersClient
+    app_id = s.get("fyers_app_id") or os.environ.get("FYERS_APP_ID")
+    redirect = s.get("fyers_redirect_uri") or os.environ.get("FYERS_REDIRECT_URI")
+    if not (app_id and redirect):
+        cli.fail("need --app-id and --redirect-uri (the redirect URL registered on your Fyers app)")
+    print("1. Open this URL and log in to Fyers:")
+    print(f"   {FyersClient(app_id=app_id).login_url(redirect)}")
+    print("2. You are redirected to your redirect URL with ?auth_code=XXXX")
+    print("3. Run: python3 scripts/setup.py fyers-session --auth-code XXXX")
+
+
+def cmd_fyers_session(a):
+    secret = a.secret or config.secret("fyers_secret", "FYERS_SECRET")
+    if not secret:
+        cli.fail("app secret missing: pass --secret or run fyers-login --secret")
+    from tradekit.brokers.fyers import FyersClient
+    c = FyersClient()
+    if not c.app_id:
+        cli.fail("app id missing: run fyers-login --app-id first")
+    data = c.generate_session(a.auth_code, secret)
+    _save(fyers_access_token=data["access_token"])
+    print(f"Fyers session saved (token {config.mask(data['access_token'])}). Tokens expire daily - repeat each trading day.")
+
+
+def cmd_upstox_login(a):
+    s = _save(upstox_api_key=a.api_key, upstox_api_secret=a.api_secret, upstox_redirect_uri=a.redirect_uri)
+    from tradekit.brokers.upstox import UpstoxClient
+    key = s.get("upstox_api_key") or os.environ.get("UPSTOX_API_KEY")
+    redirect = s.get("upstox_redirect_uri") or os.environ.get("UPSTOX_REDIRECT_URI")
+    if not (key and redirect):
+        cli.fail("need --api-key and --redirect-uri (the redirect URL registered on your Upstox app)")
+    print("1. Open this URL and log in to Upstox:")
+    print(f"   {UpstoxClient(api_key=key).login_url(redirect)}")
+    print("2. You are redirected to your redirect URL with ?code=XXXX (single use)")
+    print("3. Run: python3 scripts/setup.py upstox-session --code XXXX")
+
+
+def cmd_upstox_session(a):
+    secret = a.api_secret or config.secret("upstox_api_secret", "UPSTOX_API_SECRET")
+    redirect = config.secret("upstox_redirect_uri", "UPSTOX_REDIRECT_URI")
+    if not (secret and redirect):
+        cli.fail("api secret / redirect URI missing: run upstox-login with --api-secret and --redirect-uri")
+    from tradekit.brokers.upstox import UpstoxClient
+    data = UpstoxClient().generate_session(a.code, secret, redirect)
+    _save(upstox_access_token=data["access_token"])
+    print(f"Upstox session saved for {data.get('user_id', '?')} (token {config.mask(data['access_token'])}). "
+          "Valid until 03:30 next day - repeat each trading day.")
+
+
+def cmd_dhan_login(a):
+    _save(dhan_client_id=a.client_id, dhan_access_token=a.access_token)
+    print("Dhan credentials saved. Create the access token in web.dhan.co > My Profile > Access DhanHQ APIs "
+          "(valid 24 hours). Order APIs also need your static IP registered with Dhan.")
+
+
+def cmd_groww_login(a):
+    if a.api_key and a.api_secret:
+        from tradekit.brokers.groww import GrowwClient
+        data = GrowwClient().generate_token(a.api_key, a.api_secret)
+        _save(groww_access_token=data["token"])
+        print(f"Groww token saved ({config.mask(data['token'])}), expires {data.get('expiry', 'daily')}.")
+        return
+    if not a.access_token:
+        cli.fail("pass --access-token (Groww > Trading APIs > Generate API keys > Access Token) or --api-key and --api-secret")
+    _save(groww_access_token=a.access_token)
+    print("Groww token saved. It expires daily at 06:00 - repeat each trading day.")
+
+
 def cmd_paper_reset(a):
     from tradekit.brokers.paper import PaperBroker
     acct = PaperBroker().reset(a.cash)
@@ -183,7 +264,7 @@ def cmd_live(a):
         if not a.i_understand_the_risks:
             cli.fail("live trading sends REAL orders. Re-run with --i-understand-the-risks")
         if cfg["broker"]["name"] == "paper":
-            cli.fail("broker is 'paper'. Set a live broker first: setup.py set broker.name kite")
+            cli.fail("broker is 'paper'. Set a live broker first: setup.py set broker.name kite|fyers|upstox|dhan|groww")
         cfg["broker"]["live_trading_enabled"] = True
         print("Live trading ENABLED. Every order still needs a passing trading-risk and an explicit confirm code.")
     else:
@@ -202,7 +283,7 @@ def main():
     i.add_argument("--timezone")
     i.add_argument("--provider", choices=["yahoo", "csv", "kite"])
     i.add_argument("--csv-dir")
-    i.add_argument("--broker", choices=["paper", "kite"])
+    i.add_argument("--broker", choices=["paper", "kite", "fyers", "upstox", "dhan", "groww"])
     i.add_argument("--exchange", help="default exchange for broker symbols")
     i.add_argument("--product", help="default broker product (kite: CNC/MIS/NRML)")
     i.add_argument("--risk-pct", type=float, help="risk per trade in percent of equity")
@@ -224,6 +305,27 @@ def main():
     ks = sub.add_parser("kite-session")
     ks.add_argument("--request-token", required=True)
     ks.add_argument("--api-secret")
+    fl = sub.add_parser("fyers-login")
+    fl.add_argument("--app-id")
+    fl.add_argument("--secret")
+    fl.add_argument("--redirect-uri")
+    fs = sub.add_parser("fyers-session")
+    fs.add_argument("--auth-code", required=True)
+    fs.add_argument("--secret")
+    ul = sub.add_parser("upstox-login")
+    ul.add_argument("--api-key")
+    ul.add_argument("--api-secret")
+    ul.add_argument("--redirect-uri")
+    us = sub.add_parser("upstox-session")
+    us.add_argument("--code", required=True)
+    us.add_argument("--api-secret")
+    dl = sub.add_parser("dhan-login")
+    dl.add_argument("--client-id", required=True)
+    dl.add_argument("--access-token", required=True)
+    gl = sub.add_parser("groww-login")
+    gl.add_argument("--access-token")
+    gl.add_argument("--api-key")
+    gl.add_argument("--api-secret")
     pr = sub.add_parser("paper-reset")
     pr.add_argument("--cash", type=float)
     lv = sub.add_parser("live")
@@ -231,7 +333,9 @@ def main():
     lv.add_argument("--i-understand-the-risks", action="store_true")
     a = p.parse_args()
     {"init": cmd_init, "show": cmd_show, "set": cmd_set, "get": cmd_get, "doctor": cmd_doctor,
-     "kite-login": cmd_kite_login, "kite-session": cmd_kite_session, "paper-reset": cmd_paper_reset,
+     "kite-login": cmd_kite_login, "kite-session": cmd_kite_session,
+     "fyers-login": cmd_fyers_login, "fyers-session": cmd_fyers_session, "upstox-login": cmd_upstox_login,
+     "upstox-session": cmd_upstox_session, "dhan-login": cmd_dhan_login, "groww-login": cmd_groww_login, "paper-reset": cmd_paper_reset,
      "live": cmd_live}[a.cmd](a)
 
 

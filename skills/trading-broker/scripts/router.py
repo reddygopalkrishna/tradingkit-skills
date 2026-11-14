@@ -91,6 +91,8 @@ def cmd_preview(a):
                 ref = None
         if broker.name == "kite":
             o["kite_params"] = broker.to_kite_params(order)
+        elif hasattr(broker, "to_params"):
+            broker.to_params(order)  # fail here, before a confirm code, on a bad symbol/product/price
         pending = {"kind": "close" if a.close else "open", "order": o,
                    "approval_id": approval["approval_id"] if approval else None,
                    "trade_id": approval.get("trade_id") if approval else None,
@@ -125,6 +127,9 @@ def md_preview(p):
         if p["broker"] == "kite" and p["kind"] == "open" and o.get("stop_loss"):
             out.append("Note: Kite entry orders do not carry the stop. After the fill, place a protective "
                        "GTT with `preview --protect` or a stop order.")
+        elif p["live"] and p["broker"] != "kite" and p["kind"] == "open" and o.get("stop_loss"):
+            out.append(f"Note: {p['broker']} entry orders do not carry the stop. After the fill, place a protective "
+                       "stop order (preview --type stop --stop-price ... --close).")
     out.append("")
     out.append(f"CONFIRM CODE: **{p['code']}** (expires {p['expires']})")
     out.append("Ask the user to confirm this exact order. Only after an explicit yes, run: "
@@ -301,7 +306,7 @@ def cmd_kill(a):
 
 def main():
     p = cli.parser(__doc__)
-    p.add_argument("--broker", choices=["paper", "kite"], help="override config broker")
+    p.add_argument("--broker", choices=["paper", "kite", "fyers", "upstox", "dhan", "groww"], help="override config broker")
     sub = p.add_subparsers(dest="cmd", required=True)
     pv = sub.add_parser("preview")
     pv.add_argument("--symbol")
@@ -312,7 +317,7 @@ def main():
     pv.add_argument("--stop-price", type=float)
     pv.add_argument("--stop-loss", type=float, help="protective stop (required for opening orders)")
     pv.add_argument("--take-profit", type=float)
-    pv.add_argument("--product", help="broker product, e.g. kite CNC/MIS/NRML")
+    pv.add_argument("--product", help="broker product, e.g. CNC / MIS / NRML (each adapter maps to its own names)")
     pv.add_argument("--tag")
     pv.add_argument("--close", action="store_true", help="this order reduces/closes an existing position")
     pv.add_argument("--protect", action="store_true", help="place a broker-side GTT stop for a holding (kite)")

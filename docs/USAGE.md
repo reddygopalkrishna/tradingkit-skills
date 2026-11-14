@@ -450,6 +450,28 @@ python3 scripts/entry.py watchlist --watchlist my.txt
 
 Practise on past sessions: save a chart and replay it with `--offline FILE --now "YYYY-MM-DD HH:MM"`.
 
+### trading-fno - options: Greeks, payoff, option chain
+
+Analysis only; it never places an order. Lot sizes are yours (or Kite's) to give, never guessed.
+
+```bash
+python3 scripts/fno.py greeks --spot 24500 --strike 24600 --kind call --days 7 --iv 14 --lot-size 75
+python3 scripts/fno.py iv --price 120 --spot 24500 --strike 24600 --kind call --days 7
+python3 scripts/fno.py strategies                             # named shapes
+python3 scripts/fno.py strategy --name iron-condor --strikes 24000,24200,24800,25000 --premiums 20,60,55,18 --lot-size 75 --spot 24500 --chart
+python3 scripts/fno.py strategy --legs +1C24600@120 -1C24800@60 --lot-size 75
+python3 scripts/fno.py chain AAPL                             # US: Cboe delayed data, nearest expiry
+python3 scripts/fno.py chain NIFTY --file ~/Downloads/option-chain.csv --spot 24512 --expiry 2026-11-27
+python3 scripts/fno.py chain NIFTY --kite                     # Kite instruments + quotes (market-data plan)
+```
+
+- **India:** nseindia.com blocks programs, so download the option-chain CSV from its Option Chain page
+  (Download) and pass it with `--file`, plus `--spot` and `--expiry` (the file has neither). Or use `--kite`.
+- **US:** Cboe's public delayed JSON, no key, about 15 minutes late, unofficial and able to change. Yahoo's
+  options endpoint needs a cookie and crumb, so it is not used.
+- The chain shows OI, PCR, max pain, the biggest call and put OI strikes, and the ATM straddle (the market's
+  implied move). Payoff is at expiry; Black-Scholes is European with `--rate` (default 5%) - set your own.
+
 ### trading-alerts - let the numbers call you
 
 ```bash
@@ -489,7 +511,33 @@ your broker's app. For orders straight from your agent, the pack talks to broker
 interface (`core/tradekit/brokers/base.py`), so adding a broker is a contained change. The same risk gate, preview
 and confirm step apply to every broker.
 
-Adapters available now: **Zerodha Kite** (below). More are on the roadmap; contributions welcome.
+Adapters available now (all Indian brokers with an official API):
+
+| Broker | Status | Symbol format | Cost of API | Daily login | Notes |
+|---|---|---|---|---|---|
+| Zerodha Kite | tested in use | `NSE:INFY` | Personal plan free (orders); data needs paid Connect | yes | GTT stops |
+| Fyers (API v3) | beta | `NSE:SBIN-EQ` | Standard plan free | yes | static IP may be required |
+| Upstox | beta | `NSE_EQ\|INE669E01016` (instrument key) | not stated in docs | yes (until 03:30) | no MARKET orders since Apr 2026 |
+| Dhan (DhanHQ v2) | beta | `NSE_EQ:11536` (securityId) | Trading APIs free | token valid 24 h | static IP mandatory for orders |
+| Groww | beta | `NSE:RELIANCE` | Trading API subscription (price not in docs) | token expires 06:00 | no quotes: values at cost |
+| Angel One (SmartAPI) | **not supported yet** | - | - | - | see "Brokers not supported" below |
+
+*Beta* means: written against each broker's official API documentation and covered by offline tests that use
+mocked responses; it has **not** been exercised against a live account by the maintainers. Place one very small
+order first and check it in your broker's app. Contributions that confirm or fix a field are welcome.
+
+Every adapter uses the same Broker interface and the same flow: trading-risk approval, then preview with a confirm
+code, then your explicit yes, then submit. The kill switch and `live on --i-understand-the-risks` apply to all of
+them. Credentials go in `~/.trading-skills/secrets.json` (mode 600) or environment variables and are never printed.
+
+Set `broker.default_exchange` / `broker.default_product` with `setup.py set`. Product names are mapped per broker:
+`CNC` (delivery), `MIS` (intraday), `NRML` (carry-forward derivatives). Entry orders on all live brokers do not
+carry the stop: after the fill, place a protective stop order (`preview --type stop --stop-price X --close`).
+Kite also supports a broker-side GTT stop (`--protect`).
+
+**Static IP / algo rules.** SEBI's retail algo rules (effective April 2026) mean several brokers require orders
+to come from a registered static IP, and algo registration above 10 orders per second. These are your
+responsibility; check your broker's current notice before going live.
 
 ### Zerodha Kite
 
@@ -547,6 +595,71 @@ python3 scripts/router.py submit --confirm CODE2
 and check it in the Kite app before you rely on the integration.
 
 Turn live trading off any time with `setup.py live off`, or halt everything with `router.py kill on`.
+
+### Fyers
+
+1. Create an app in the Fyers API dashboard with the *Order Placement* permission (add *Transactions Info* for
+   balances) and note the App ID, secret and the redirect URL you registered. The Standard plan is free.
+2. ```bash
+   cd skills/trading-setup
+   python3 scripts/setup.py fyers-login --app-id ABCD1234-100 --secret YOUR_SECRET --redirect-uri https://127.0.0.1/
+   python3 scripts/setup.py fyers-session --auth-code THE_AUTH_CODE
+   python3 scripts/setup.py set broker.name fyers
+   ```
+   Open the printed URL, log in, copy `auth_code` from the redirect URL. Tokens expire daily (about 06:30 IST).
+   Env vars: `FYERS_APP_ID`, `FYERS_SECRET`, `FYERS_REDIRECT_URI`, `FYERS_ACCESS_TOKEN`.
+3. Symbols: `NSE:SBIN-EQ` (a bare `SBIN` becomes `NSE:SBIN-EQ` when `broker.default_exchange` is NSE). Products
+   `CNC`, `INTRADAY`/`MIS`, `MARGIN`/`NRML`, `MTF`. Fyers limits: 10 order calls/s.
+4. Positions list is the day's positions only (no delivery holdings call yet).
+
+### Upstox
+
+1. Create an app in the Upstox developer console; note API key, secret and redirect URL.
+2. ```bash
+   python3 scripts/setup.py upstox-login --api-key KEY --api-secret SECRET --redirect-uri https://127.0.0.1/
+   python3 scripts/setup.py upstox-session --code THE_CODE
+   python3 scripts/setup.py set broker.name upstox
+   ```
+   The token is valid until 03:30 the next day. Env vars: `UPSTOX_API_KEY`, `UPSTOX_API_SECRET`,
+   `UPSTOX_REDIRECT_URI`, `UPSTOX_ACCESS_TOKEN`.
+3. Symbols are **instrument keys** such as `NSE_EQ|INE669E01016`; find them in Upstox's daily instrument file
+   (`assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz`). Products `D`/`CNC`, `I`/`MIS`, `MTF`.
+4. MARKET orders are rejected by Upstox's API rules; the preview refuses them. Use limit orders.
+5. Holdings are not listed (only the day's positions).
+
+### Dhan
+
+1. In web.dhan.co open *My Profile > Access DhanHQ APIs*, create an access token (valid 24 hours), and register your
+   static IP with Dhan (mandatory for placing and cancelling orders). Trading APIs are free.
+2. ```bash
+   python3 scripts/setup.py dhan-login --client-id YOUR_CLIENT_ID --access-token THE_TOKEN
+   python3 scripts/setup.py set broker.name dhan
+   ```
+   Env vars: `DHAN_CLIENT_ID`, `DHAN_ACCESS_TOKEN`.
+3. Symbols are `SEGMENT:securityId`, e.g. `NSE_EQ:11536`. Look the id up in Dhan's scrip master CSV
+   (`images.dhan.co/api-data/api-scrip-master.csv`). Products `CNC`, `INTRADAY`/`MIS`, `MARGIN`/`NRML`, `MTF`.
+4. Dhan returns no last price on positions, so position values are shown at cost.
+
+### Groww
+
+1. Subscribe to the Trading API in Groww (*Profile > Trading APIs*), then create an access token there
+   (it expires daily at 06:00).
+2. ```bash
+   python3 scripts/setup.py groww-login --access-token THE_TOKEN
+   python3 scripts/setup.py set broker.name groww
+   ```
+   Or let the pack mint it from an approved API key: `groww-login --api-key KEY --api-secret SECRET`.
+   Env var: `GROWW_ACCESS_TOKEN`.
+3. Symbols `NSE:RELIANCE` (exchange and trading symbol), cash segment only. Products `CNC`, `MIS`, `NRML`.
+   Groww has no quote call in this adapter, so position values are at cost.
+
+### Brokers not supported yet
+
+- **Angel One (SmartAPI)** has an official API (free), but it needs a fresh TOTP at every login, a registered
+  static IP for order calls, and instrument tokens from its scrip master. We could not verify the current login
+  and order documentation well enough to ship an adapter we would describe as tested, so it is left out. A
+  contribution is welcome.
+- Any broker without an official public API (we do not use unofficial or reverse-engineered endpoints).
 
 ---
 

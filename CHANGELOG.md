@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **New skill `trading-fno`:** F&O analysis for India and US. Black-Scholes price and Greeks, implied volatility
+  (bisection), multi-leg payoff with breakevens and max profit/loss (named strategies or custom legs, ASCII
+  chart), and option-chain OI / PCR / max pain / ATM straddle. Chain sources: Cboe delayed JSON for US tickers,
+  a user-downloaded NSE option-chain CSV (read by header name), Kite instruments + quotes. Analysis only.
+  Core: new `tradekit.options`. 29 tests, offline.
+
 ## 0.2.0 - 2026-11-14
 
 The pack is now **trading-skills**, with 20 skills under one `trading-` family name, and five new skills.
