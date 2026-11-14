@@ -1,6 +1,6 @@
 """Paper broker: a local simulated account. Default broker - no keys, no real money.
 
-State lives in TRADINGKIT_SKILLS_HOME/paper/account.json. Prices come from the
+State lives in TRADING_SKILLS_HOME/paper/account.json. Prices come from the
 configured data provider (or an injected price function in tests).
 
 Fill model

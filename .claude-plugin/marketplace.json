@@ -1,55 +1,65 @@
 {
-  "name": "tradingkit-skills",
+  "name": "trading-skills",
   "owner": {
     "name": "reddygopalkrishna",
     "url": "https://github.com/reddygopalkrishna"
   },
   "metadata": {
-    "description": "Broker-agnostic, market-agnostic trading skills for AI agents: analysis, screening, patterns, planning, risk gate, backtesting, Monte Carlo, journaling, paper and live order routing.",
-    "version": "0.1.0"
+    "description": "20 trading skills for AI agents that work in any market (US, India NSE/BSE, UK, Europe, Asia, crypto, forex): news, earnings, insider and Congress trades, scanner, chart patterns, entry timer, trade planner, odds, risk gate, alerts, backtesting, journal, review, paper and live orders.",
+    "version": "0.2.0"
   },
   "plugins": [
     {
-      "name": "tradingkit-skills",
-      "description": "15 trading skills that work on any market: technical analysis, chart patterns, market regime, screener, trade planner, position sizer, pre-trade risk gate, backtester, Monte Carlo, journal, performance review, paper/live order router. Zero API keys by default.",
-      "version": "0.1.0",
+      "name": "trading-skills",
+      "description": "20 trading skills for any market: scan, read the news and earnings, track insider and Congress trades, time the entry, plan the stop and size, check the odds, pass the risk gate, then preview and confirm every order. Paper trading by default, zero API keys.",
+      "version": "0.2.0",
       "source": "./",
       "strict": false,
       "author": {
         "name": "reddygopalkrishna"
       },
-      "homepage": "https://github.com/reddygopalkrishna/tradingkit-skills",
-      "repository": "https://github.com/reddygopalkrishna/tradingkit-skills",
+      "homepage": "https://github.com/reddygopalkrishna/trading-skills",
+      "repository": "https://github.com/reddygopalkrishna/trading-skills",
       "license": "MIT",
       "keywords": [
         "trading",
         "stocks",
+        "nse",
+        "india",
         "crypto",
         "forex",
+        "day-trading",
         "backtesting",
         "technical-analysis",
         "risk-management",
-        "screener",
+        "insider-trading",
+        "congress-trades",
+        "earnings",
         "paper-trading",
         "agent-skills"
       ],
       "category": "finance",
       "skills": [
-        "./skills/trading-navigator",
+        "./skills/trading-start",
         "./skills/trading-setup",
-        "./skills/market-data",
-        "./skills/technical-analysis",
-        "./skills/chart-patterns",
-        "./skills/market-regime",
-        "./skills/stock-screener",
-        "./skills/trade-planner",
-        "./skills/position-sizer",
-        "./skills/pre-trade-gate",
-        "./skills/order-router",
-        "./skills/backtester",
-        "./skills/monte-carlo-sim",
-        "./skills/trade-journal",
-        "./skills/performance-review"
+        "./skills/trading-data",
+        "./skills/trading-market",
+        "./skills/trading-scanner",
+        "./skills/trading-patterns",
+        "./skills/trading-chart",
+        "./skills/trading-news",
+        "./skills/trading-earnings",
+        "./skills/trading-insiders",
+        "./skills/trading-entry",
+        "./skills/trading-plan",
+        "./skills/trading-odds",
+        "./skills/trading-size",
+        "./skills/trading-risk",
+        "./skills/trading-broker",
+        "./skills/trading-alerts",
+        "./skills/trading-journal",
+        "./skills/trading-review",
+        "./skills/trading-backtest"
       ]
     }
   ]

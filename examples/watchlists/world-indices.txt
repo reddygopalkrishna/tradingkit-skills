@@ -1,4 +1,4 @@
-# Benchmarks for market-regime
+# Benchmarks for trading-market
 ^GSPC
 ^NDX
 ^RUT

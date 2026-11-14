@@ -5,4 +5,4 @@
 - [ ] `python3 tools/validate_skills.py` passes
 - [ ] `python3 -m unittest discover -s tests` passes (offline)
 - [ ] New behaviour has tests
-- [ ] Anything that can place orders still goes through pre-trade-gate + preview/confirm
+- [ ] Anything that can place orders still goes through trading-risk + preview/confirm

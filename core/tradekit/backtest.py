@@ -1,4 +1,4 @@
-"""Portfolio backtester for rule-based strategies.
+"""Portfolio trading-backtest for rule-based strategies.
 
 Execution model (no look-ahead):
     * Rules are evaluated on the CLOSE of bar t.
@@ -10,7 +10,7 @@ Execution model (no look-ahead):
     * max_bars exits at the close of the Nth bar held.
     * Positions still open at the end are closed at the last close (flagged end_of_data).
 
-Strategy spec (JSON) - see SPEC_DEFAULTS and skills/backtester/references/strategy-spec.md
+Strategy spec (JSON) - see SPEC_DEFAULTS and skills/trading-backtest/references/strategy-spec.md
 """
 
 from __future__ import annotations

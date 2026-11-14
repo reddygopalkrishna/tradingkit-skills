@@ -5,7 +5,7 @@ dist/
 *.html
 !docs/**/*.html
 .venv/
-.tradingkit-skills/
+.trading-skills/
 *.db
 
 # private launch and marketing drafts (not published)

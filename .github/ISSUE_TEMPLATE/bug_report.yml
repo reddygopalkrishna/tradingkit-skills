@@ -4,7 +4,7 @@ labels: [bug]
 body:
   - type: input
     id: skill
-    attributes: {label: Skill, placeholder: e.g. backtester}
+    attributes: {label: Skill, placeholder: e.g. trading-backtest}
     validations: {required: true}
   - type: textarea
     id: command

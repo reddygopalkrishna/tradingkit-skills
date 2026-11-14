@@ -1,7 +1,7 @@
 """Pre-trade risk gate and approval tokens.
 
 The gate turns the risk limits in config["risk"] into hard PASS/FAIL checks.
-A PASS writes a short-lived approval that the order-router requires before it
+A PASS writes a short-lived approval that the trading-broker requires before it
 will submit an order. This makes "no plan, no trade" mechanical, not optional.
 """
 

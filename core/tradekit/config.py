@@ -1,12 +1,12 @@
 """User configuration and paths.
 
-Everything lives under TRADINGKIT_SKILLS_HOME (default ~/.tradingkit-skills):
+Everything lives under TRADING_SKILLS_HOME (default ~/.trading-skills):
     config.json    risk limits, data provider, broker, account settings
     secrets.json   broker credentials (chmod 600) - env vars take precedence
     cache/         downloaded market data
     journal.db     SQLite trade journal
     paper/         paper broker state
-    approvals/     pre-trade gate approvals consumed by order-router
+    approvals/     pre-trade gate approvals consumed by trading-broker
     audit.log      JSONL log of every order action
     KILL_SWITCH    if this file exists, no order can be submitted
 """
@@ -32,6 +32,7 @@ DEFAULTS: Dict[str, Any] = {
         "provider": "yahoo",         # yahoo | csv | kite
         "csv_dir": None,             # folder of SYMBOL.csv files for the csv provider
         "cache_ttl_minutes": 60,
+        "sec_user_agent": None,      # "Your Name you@example.com" - SEC asks automated clients to identify themselves
     },
     "broker": {
         "name": "paper",             # paper | kite
@@ -51,6 +52,7 @@ DEFAULTS: Dict[str, Any] = {
         "max_consecutive_losses": 3,
         "approval_ttl_minutes": 30,
         "confirm_ttl_minutes": 10,
+        "no_entries_last_minutes": 30,   # trading-entry: no new intraday entries this close to the close
     },
     "costs": {
         "commission_pct": 0.03,      # percent of notional per side
@@ -61,7 +63,14 @@ DEFAULTS: Dict[str, Any] = {
 
 
 def home() -> Path:
-    p = Path(os.environ.get("TRADINGKIT_SKILLS_HOME", Path.home() / ".tradingkit-skills")).expanduser()
+    env = os.environ.get("TRADING_SKILLS_HOME") or os.environ.get("TRADINGKIT_SKILLS_HOME")  # legacy name
+    if env:
+        p = Path(env).expanduser()
+    else:
+        p = Path.home() / ".trading-skills"
+        legacy = Path.home() / ".tradingkit-skills"   # v0.1 folder: keep using it so no data is lost
+        if not p.exists() and legacy.is_dir():
+            p = legacy
     p.mkdir(parents=True, exist_ok=True)
     return p
 

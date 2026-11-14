@@ -22,11 +22,13 @@ IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc")
 EXAMPLES = ROOT / "examples"
 # example files bundled into skills so each skill works when installed alone
 ASSETS = {
-    "stock-screener": ["watchlists"],
-    "chart-patterns": ["watchlists"],
-    "market-regime": ["watchlists"],
-    "trading-navigator": ["watchlists"],
-    "backtester": ["strategies"],
+    "trading-scanner": ["watchlists"],
+    "trading-patterns": ["watchlists"],
+    "trading-market": ["watchlists"],
+    "trading-start": ["watchlists"],
+    "trading-entry": ["watchlists"],
+    "trading-news": ["watchlists"],
+    "trading-backtest": ["strategies"],
 }
 
 

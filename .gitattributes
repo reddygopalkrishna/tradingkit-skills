@@ -2,3 +2,8 @@
 skills/*/scripts/_vendor/** linguist-vendored linguist-generated
 skills/*/assets/** linguist-documentation
 * text=auto eol=lf
+
+# real-data test fixtures
+*.pdf binary
+*.zip binary
+*.gz binary

@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "tradingkit-skills: trading skills for AI agents - any market, any broker"
+title: "trading-skills: trading skills for AI agents - any market, any broker"
 type: software
 authors:
   - alias: reddygopalkrishna
-version: 0.1.0
-date-released: 2026-11-08
+version: 0.2.0
+date-released: 2026-11-14
 license: MIT
-repository-code: "https://github.com/reddygopalkrishna/tradingkit-skills"
+repository-code: "https://github.com/reddygopalkrishna/trading-skills"
 abstract: >-
   Open-source Agent Skills for trading research and execution: technical analysis, chart patterns,
   market regime, screening, trade planning, position sizing, a pre-trade risk gate, backtesting,

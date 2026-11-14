@@ -41,6 +41,63 @@ def period_days(period: str) -> int:
     return table[period]
 
 
+def _local(epoch: int, gmtoff: int, fmt: str = "%Y-%m-%dT%H:%M") -> str:
+    return dt.datetime.fromtimestamp(int(epoch) + int(gmtoff), dt.timezone.utc).strftime(fmt)
+
+
+def parse_yahoo_chart(payload: Dict, symbol: str, interval: str = "1d") -> Bars:
+    """Yahoo v8 chart JSON -> Bars. Times are the exchange's local time. meta carries the
+    exchange's regular sessions (sessions: [{date, open, close}]) so intraday tools need no
+    holiday tables: a day with no session is a day the market was closed."""
+    chart = (payload or {}).get("chart", {})
+    if chart.get("error"):
+        raise DataError(f"Yahoo error for {symbol}: {chart['error'].get('description', chart['error'])}")
+    results = chart.get("result") or []
+    if not results:
+        raise DataError(f"no data returned for {symbol}")
+    r = results[0]
+    ts = r.get("timestamp") or []
+    q = (r.get("indicators", {}).get("quote") or [{}])[0]
+    adj = (r.get("indicators", {}).get("adjclose") or [{}])[0].get("adjclose")
+    meta = r.get("meta", {})
+    gmtoff = int(meta.get("gmtoffset") or 0)
+    daily = interval in ("1d", "1wk", "1mo")
+    rows = []
+    for i, t in enumerate(ts):
+        o, h, l, c, v = (q.get(k, [None] * len(ts))[i] for k in ("open", "high", "low", "close", "volume"))
+        if c is None:
+            continue
+        factor = 1.0
+        if adj and adj[i] and daily:
+            factor = adj[i] / c if c else 1.0
+        d = _local(t, gmtoff, "%Y-%m-%d" if daily else "%Y-%m-%dT%H:%M")
+        rows.append({"date": d,
+                     "open": (o if o is not None else c) * factor,
+                     "high": (h if h is not None else c) * factor,
+                     "low": (l if l is not None else c) * factor,
+                     "close": c * factor, "volume": v or 0})
+    sessions = []
+    for day in meta.get("tradingPeriods") or []:
+        for per in (day if isinstance(day, list) else [day]):
+            if isinstance(per, dict) and per.get("start"):
+                off = int(per.get("gmtoffset", gmtoff))
+                sessions.append({"date": _local(per["start"], off, "%Y-%m-%d"), "open": _local(per["start"], off, "%H:%M"),
+                                 "close": _local(per["end"], off, "%H:%M")})
+    reg = (meta.get("currentTradingPeriod") or {}).get("regular") or {}
+    info = {"currency": meta.get("currency"), "exchange": meta.get("fullExchangeName") or meta.get("exchangeName"),
+            "timezone": meta.get("exchangeTimezoneName"), "instrument_type": meta.get("instrumentType"),
+            "name": meta.get("longName") or meta.get("shortName"), "gmtoffset": gmtoff,
+            "adjusted": daily, "source": "yahoo", "sessions": sessions,
+            "previous_close": meta.get("chartPreviousClose") if interval == "1d" else meta.get("previousClose"),
+            "last_price": meta.get("regularMarketPrice"),
+            "market_time": _local(meta["regularMarketTime"], gmtoff) if meta.get("regularMarketTime") else None}
+    if reg.get("start"):
+        off = int(reg.get("gmtoffset", gmtoff))
+        info["current_session"] = {"date": _local(reg["start"], off, "%Y-%m-%d"), "open": _local(reg["start"], off, "%H:%M"),
+                                   "close": _local(reg["end"], off, "%H:%M")}
+    return Bars.from_rows(symbol, interval, rows, info)
+
+
 # ------------------------------------------------------------------ providers
 
 class Provider:
@@ -89,37 +146,7 @@ class YahooProvider(Provider):
             if e.status == 404:
                 raise DataError(f"symbol not found on Yahoo: {symbol}") from None
             raise DataError(f"Yahoo request failed for {symbol}: {e}") from None
-        chart = (payload or {}).get("chart", {})
-        if chart.get("error"):
-            raise DataError(f"Yahoo error for {symbol}: {chart['error'].get('description', chart['error'])}")
-        results = chart.get("result") or []
-        if not results:
-            raise DataError(f"no data returned for {symbol}")
-        r = results[0]
-        ts = r.get("timestamp") or []
-        q = (r.get("indicators", {}).get("quote") or [{}])[0]
-        adj = (r.get("indicators", {}).get("adjclose") or [{}])[0].get("adjclose")
-        meta = r.get("meta", {})
-        gmtoff = int(meta.get("gmtoffset") or 0)
-        rows = []
-        for i, t in enumerate(ts):
-            o, h, l, c, v = (q.get(k, [None] * len(ts))[i] for k in ("open", "high", "low", "close", "volume"))
-            if c is None:
-                continue
-            factor = 1.0
-            if adj and adj[i] and interval in ("1d", "1wk", "1mo"):
-                factor = adj[i] / c if c else 1.0
-            local = dt.datetime.fromtimestamp(t + gmtoff, dt.timezone.utc).replace(tzinfo=None)
-            d = local.strftime("%Y-%m-%d") if interval in ("1d", "1wk", "1mo") else local.strftime("%Y-%m-%dT%H:%M")
-            rows.append({"date": d,
-                         "open": (o if o is not None else c) * factor,
-                         "high": (h if h is not None else c) * factor,
-                         "low": (l if l is not None else c) * factor,
-                         "close": c * factor, "volume": v or 0})
-        info = {"currency": meta.get("currency"), "exchange": meta.get("exchangeName"),
-                "timezone": meta.get("exchangeTimezoneName"), "instrument_type": meta.get("instrumentType"),
-                "adjusted": interval in ("1d", "1wk", "1mo"), "source": "yahoo"}
-        bars = Bars.from_rows(symbol, interval, rows, info)
+        bars = parse_yahoo_chart(payload, symbol, interval)
         if end and not start:
             bars = bars.until(end)
         return bars
@@ -337,3 +364,41 @@ def load_universe(spec: Optional[str] = None, symbols: Optional[Iterable[str]] =
             seen.add(s)
             out.append(s)
     return out
+
+
+def fresh_bars(symbol: str, interval: str = "5m", period: str = "1d", provider: Optional[str] = None,
+               offline: Optional[str] = None) -> Bars:
+    """Bars straight from the source, never from the cache (prices that must be current).
+
+    offline: a saved Yahoo chart JSON file, or a folder holding chart-<SYMBOL>-<interval>.json
+    (used by tests and to replay a past session)."""
+    if offline:
+        p = Path(offline).expanduser()
+        if p.is_dir():
+            p = p / f"chart-{symbol}-{interval}.json"
+        if not p.exists():
+            raise DataError(f"no saved chart for {symbol} at {p}")
+        text = p.read_bytes()
+        if p.suffix == ".gz":
+            import gzip
+            text = gzip.decompress(text)
+        return parse_yahoo_chart(json.loads(text.decode("utf-8")), symbol, interval)
+    return get_provider(provider).bars(symbol, interval, period)
+
+
+def live_quote(symbol: str, provider: Optional[str] = None, offline: Optional[str] = None) -> Dict:
+    """Price, previous close, exchange session and status for one symbol (delayed on free data)."""
+    from . import session as _session
+    b = fresh_bars(symbol, "5m", "5d", provider, offline)
+    if not len(b):
+        raise DataError(f"no intraday data for {symbol}")
+    price = b.meta.get("last_price") or b.close[-1]
+    # previous close = last bar of the session before the latest one (Yahoo's meta field is unreliable after hours)
+    last_day = b.date[-1][:10]
+    before = [i for i, d in enumerate(b.date) if d[:10] < last_day]
+    prev = b.close[before[-1]] if before else b.meta.get("previous_close")
+    return {"symbol": symbol, "price": float(price), "previous_close": prev,
+            "name": b.meta.get("name"), "currency": b.meta.get("currency"), "exchange": b.meta.get("exchange"),
+            "timezone": b.meta.get("timezone"), "market_time": b.meta.get("market_time") or b.date[-1],
+            "gmtoffset": b.meta.get("gmtoffset"), "bars": b, "source": b.meta.get("source", "yahoo"),
+            "delayed": b.meta.get("source", "yahoo") == "yahoo"}

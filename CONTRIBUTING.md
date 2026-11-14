@@ -1,14 +1,14 @@
 # Contributing
 
-Thanks for helping make tradingkit-skills better.
+Thanks for helping make trading-skills better.
 
 ## Ground rules
 
 1. **Zero dependencies.** Core and skill scripts use the Python standard library only (3.9+).
    Optional integrations may import a package lazily and fail with a clear message if it is missing.
 2. **Numbers come from code.** Skills must never ask the model to estimate prices, indicators or sizes.
-3. **Safety is not optional.** Anything that can place an order goes through `pre-trade-gate`
-   approvals and the `order-router` preview -> confirm flow. Paper is the default.
+3. **Safety is not optional.** Anything that can place an order goes through `trading-risk`
+   approvals and the `trading-broker` preview -> confirm flow. Paper is the default.
 4. **Offline tests.** Every feature ships with tests that run without network access (`tests/synth.py`).
 5. **Market-neutral.** No market is the default or special. Use generic examples and let users configure.
 

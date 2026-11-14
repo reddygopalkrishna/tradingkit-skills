@@ -1,17 +1,17 @@
 ---
 name: trading-setup
-description: Configure the tradingkit-skills toolkit - account size, currency, benchmark index, risk limits, data provider (free Yahoo, CSV, or broker), broker (paper or Zerodha Kite), credentials and the live-trading switch. Use when the user is getting started, says "set up trading", wants to change risk per trade or limits, connect a broker, log in to Kite, reset the paper account, or when another trading skill reports missing config.
+description: Configure the trading-skills toolkit - account size, currency, benchmark index, risk limits, data provider (free Yahoo, CSV, or broker), broker (paper or a live broker adapter), credentials and the live-trading switch. Use when the user is getting started, says "set up trading", wants to change risk per trade or limits, connect or log in to a broker, reset the paper account, or when another trading skill reports missing config.
 license: MIT
 metadata:
   author: reddygopalkrishna
-  version: "0.1.0"
-  pack: tradingkit-skills
+  version: "0.2.0"
+  pack: trading-skills
 ---
 
-# Trading Setup
+# Trading Setup (`trading-setup`)
 
 One-time (and occasional) configuration for every skill in the pack. All state lives in
-`~/.tradingkit-skills/` (override with `TRADINGKIT_SKILLS_HOME`). Works with zero API keys:
+`~/.trading-skills/` (override with `TRADING_SKILLS_HOME`). Works with zero API keys:
 free Yahoo data + the built-in paper broker.
 
 Run commands from this skill's directory. Python 3.9+, standard library only.
@@ -46,9 +46,15 @@ Exchange suffixes follow Yahoo: `.L` London, `.TO` Toronto, `.NS` NSE, `.BO` BSE
 
 `risk_per_trade_pct` (1.0), `max_position_pct` (20), `max_open_risk_pct` (6), `max_open_positions` (8),
 `max_daily_loss_pct` (3), `max_drawdown_pct` (15), `min_reward_risk` (1.5), `max_consecutive_losses` (3).
-These are enforced by **pre-trade-gate**; change them only when the user explicitly asks.
+These are enforced by **trading-risk**; change them only when the user explicitly asks.
 
-## Connecting Zerodha Kite (optional)
+## Connecting a live broker (optional)
+
+Live brokers plug in through adapters in `core/tradekit/brokers/`; the paper broker needs nothing.
+Adapters available now: **Zerodha Kite** (below). If the user's broker has no adapter yet, everything
+except automatic order placement still works: they place the planned order in their broker's app.
+
+### Zerodha Kite
 
 1. User creates an app at developers.kite.trade. The free **Personal** plan covers orders, GTT and
    portfolio. Historical/live data needs the paid **Connect** plan - otherwise keep `data.provider=yahoo`.

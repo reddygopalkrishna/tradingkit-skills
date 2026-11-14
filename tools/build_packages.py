@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build one .skill (zip) per skill for upload to claude.ai (Customize > Skills), plus SHA256SUMS.
 
-    python3 tools/build_packages.py            # -> dist/<skill>.skill, dist/tradingkit-skills-all.zip
+    python3 tools/build_packages.py            # -> dist/<skill>.skill, dist/trading-skills-all.zip
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ def main():
         with zipfile.ZipFile(out, "w") as z:
             add_dir(z, sd, sd.name)
         built.append(out)
-    bundle = DIST / "tradingkit-skills-all.zip"
+    bundle = DIST / "trading-skills-all.zip"
     with zipfile.ZipFile(bundle, "w") as z:
         for sd in sorted(p for p in SKILLS.iterdir() if (p / "SKILL.md").exists()):
             add_dir(z, sd, f"skills/{sd.name}")
