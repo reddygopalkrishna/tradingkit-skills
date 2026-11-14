@@ -11,10 +11,14 @@ odds, set alerts, journal everything and route orders - paper by default, live o
 
 [![CI](https://github.com/reddygopalkrishna/trading-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/reddygopalkrishna/trading-skills/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Skills](https://img.shields.io/badge/skills-20-brightgreen)
+![Skills](https://img.shields.io/badge/skills-21-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%2B-informational)
 ![Dependencies](https://img.shields.io/badge/dependencies-0-success)
 [![Agent Skills](https://img.shields.io/badge/format-Agent%20Skills-8A2BE2)](https://agentskills.io)
+
+<img src="docs/assets/demo-reliance-trade-plan.png" alt="Claude Code running trading-chart, trading-patterns, trading-market, trading-plan and trading-risk on RELIANCE.NS: cup and handle setup, Nifty 50 regime, entry, stop, targets, position size and a risk-gate PASS" width="100%">
+
+<sub>Real output on the 13 Nov 2026 NSE close: chart read, cup &amp; handle (score 91), Nifty 50 regime, plan and risk gate. Paper account, nothing placed.</sub>
 
 </div>
 
@@ -264,7 +268,8 @@ More in the [usage guide FAQ](docs/USAGE.md#12-faq).
 
 ## Roadmap
 
-**v0.2.0** (this release): 20 skills (21 with `trading-fno`, unreleased) - adds news, earnings, insider and Congress trades, the entry timer and alerts,
+**v0.3.0** (this release): 21 skills - adds `trading-fno` (option Greeks, IV, payoff, OI / PCR / max pain) and
+Fyers, Upstox, Dhan and Groww adapters; v0.2.0 added news, earnings, insider and Congress trades, the entry timer, alerts
 and the `trading-` skill names. Next (contributions welcome):
 
 - **F&O:** `trading-fno` covers option chains, Greeks, OI / PCR / max pain and payoff. Still to do: a live NSE chain feed (nseindia.com blocks programs), futures basis and roll, order legs for multi-leg strategies
