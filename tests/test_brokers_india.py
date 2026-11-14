@@ -136,7 +136,8 @@ class TestFyers(unittest.TestCase):
         self.assertIn("client_id=ABCD1234-100", c.login_url("https://127.0.0.1/"))
 
     def test_missing_credentials_message(self):
-        with mock.patch.dict(os.environ, {}, clear=True), self.assertRaises(BrokerError) as cm:
+        env = {"TRADING_SKILLS_HOME": os.environ["TRADING_SKILLS_HOME"]}  # keep the home folder; Windows needs it too
+        with mock.patch.dict(os.environ, env, clear=True), self.assertRaises(BrokerError) as cm:
             FyersBroker(FyersClient(app_id=None, access_token=None)).account()
         self.assertIn("access_token", str(cm.exception))
 
